@@ -1,1 +1,182 @@
-const hubUser=verificarLogin();if(hubUser){renderNav('hub');document.getElementById('greeting').textContent=`Olá, ${hubUser.nome.split(' ')[0]}!`;let filter='Todos';function render(){let term=document.getElementById('search').value.toLowerCase();let projects=LearnHubStore.getProjects().filter(p=>(filter==='Todos'||p.status===filter)&&[p.titulo,p.escolaNome,p.categoria].join(' ').toLowerCase().includes(term));let cards=document.getElementById('cards');cards.innerHTML=projects.length?projects.map(p=>`<article class="project-card panel"><div class="project-cover">${p.imagem||'✨'}</div><div class="project-content"><span class="badge status-${p.status.toLowerCase().replaceAll(' ','-')}">${p.status}</span><h2>${p.titulo}</h2><small class="muted">${p.escolaNome}</small><p>${p.descricao}</p><div class="project-meta"><span>${p.categoria}</span><span>🤝 ${p.colaboradores.length}</span></div><a class="btn btn-primary" href="projeto.html?id=${encodeURIComponent(p.id)}">Ver projeto</a></div></article>`).join(''):'<div class="empty panel">Nenhum projeto encontrado. Tente ajustar sua busca ou filtros.</div>'}let info=LearnHubStore.levelInfo(hubUser);document.getElementById('miniLevel').innerHTML=`<small class="muted">NÍVEL ${info.level} · ${info.title}</small><strong>${hubUser.xp} XP</strong><div class="bar"><i style="width:${info.percent}%"></i></div>`;document.getElementById('search').oninput=render;document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});render()}
+const hubUser = verificarLogin();
+
+if (hubUser) {
+
+    renderNav('hub');
+
+    document.getElementById(
+        'greeting'
+    ).textContent =
+        `Olá, ${hubUser.nome.split(' ')[0]}!`;
+
+    let filter = 'Todos';
+
+    function render() {
+
+        let term =
+            document.getElementById(
+                'search'
+            ).value.toLowerCase();
+
+        let projects =
+            LearnHubStore
+                .getProjects()
+                .filter(
+                    p =>
+                        (
+                            filter === 'Todos' ||
+                            p.status === filter
+                        ) &&
+                        [
+                            p.titulo,
+                            p.escolaNome,
+                            p.categoria
+                        ]
+                            .join(' ')
+                            .toLowerCase()
+                            .includes(term)
+                );
+
+        let cards =
+            document.getElementById(
+                'cards'
+            );
+
+        cards.innerHTML = projects.length
+
+            ? projects
+                .map(
+                    p => `
+
+                        <article class="project-card panel">
+
+                            <div class="project-cover">
+                                ${p.imagem || '✨'}
+                            </div>
+
+                            <div class="project-content">
+
+                                <span
+                                    class="badge status-${p.status
+                                        .toLowerCase()
+                                        .replaceAll(
+                                            ' ',
+                                            '-'
+                                        )}"
+                                >
+                                    ${p.status}
+                                </span>
+
+                                <h2>
+                                    ${p.titulo}
+                                </h2>
+
+                                <small class="muted">
+                                    ${p.escolaNome}
+                                </small>
+
+                                <p>
+                                    ${p.descricao}
+                                </p>
+
+                                <div class="project-meta">
+
+                                    <span>
+                                        ${p.categoria}
+                                    </span>
+
+                                    <span>
+                                        🤝 ${p.colaboradores.length}
+                                    </span>
+
+                                </div>
+
+                                <a
+                                    class="btn btn-primary"
+                                    href="projeto.html?id=${encodeURIComponent(
+                                        p.id
+                                    )}"
+                                >
+                                    Ver projeto
+                                </a>
+
+                            </div>
+
+                        </article>
+
+                    `
+                )
+                .join('')
+
+            : `
+                <div class="empty panel">
+
+                    Nenhum projeto encontrado.
+                    Tente ajustar sua busca ou filtros.
+
+                </div>
+            `;
+
+        let info =
+            LearnHubStore.levelInfo(
+                hubUser
+            );
+
+        document.getElementById(
+            'miniLevel'
+        ).innerHTML = `
+
+            <small class="muted">
+                NÍVEL ${info.level}
+                ·
+                ${info.title}
+            </small>
+
+            <strong>
+                ${hubUser.xp} XP
+            </strong>
+
+            <div class="bar">
+
+                <i
+                    style="width:${info.percent}%"
+                ></i>
+
+            </div>
+
+        `;
+    }
+
+    document.getElementById(
+        'search'
+    ).oninput = render;
+
+    document
+        .querySelectorAll(
+            '[data-filter]'
+        )
+        .forEach(
+            b =>
+                b.onclick = () => {
+
+                    filter =
+                        b.dataset.filter;
+
+                    document
+                        .querySelectorAll(
+                            '[data-filter]'
+                        )
+                        .forEach(
+                            x =>
+                                x.classList.toggle(
+                                    'active',
+                                    x === b
+                                )
+                        );
+
+                    render();
+                }
+        );
+
+    render();
+}

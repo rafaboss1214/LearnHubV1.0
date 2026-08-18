@@ -1,8 +1,653 @@
-const LearnHubStore=(()=>{const K={users:'learnhub_usuarios',projects:'learnhub_projetos',session:'usuarioLogado',seed:'learnhub_inicializado'};const XP={CONTA:10,VISUALIZAR:1,COLABORAR:10,CONCLUIR_COLABORACAO:20,PUBLICAR:10,CONCLUIR_PROJETO:30,EMBLEMA:5};const read=k=>JSON.parse(localStorage.getItem(k)||'[]');const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));const id=p=>`${p}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
-const levels=[0,50,100,200,350,500,700];const collaboratorTitles=['Novo Colaborador','Colaborador','Colaborador Ativo','Agente da Mudança','Impacto Social','Embaixador da Educação','Agente de Transformação'];const schoolTitles=['Escola Iniciante','Escola Participativa','Escola Conectada','Escola Inovadora','Escola Transformadora','Escola Referência','Referência Educacional'];
-function getUsers(){return read(K.users)}function saveUsers(v){write(K.users,v)}function getProjects(){return read(K.projects)}function saveProjects(v){write(K.projects,v)}function calculateLevel(xp){let level=1;levels.forEach((v,i)=>{if(xp>=v)level=i+1});return level}function levelInfo(user){let level=calculateLevel(user.xp||0),next=levels[level]??null,start=levels[level-1],xp=user.xp||0;return{level,title:(user.tipo==='escola'?schoolTitles:collaboratorTitles)[level-1],next,start,remaining:next===null?0:next-xp,percent:next===null?100:Math.min(100,((xp-start)/(next-start))*100)}}
-function getLoggedUser(){let s=localStorage.getItem(K.session);return s?getUsers().find(u=>u.id===s)||null:null}function setLoggedUser(id){localStorage.setItem(K.session,id)}function logout(){localStorage.removeItem(K.session)}function updateUser(user){user.nivel=calculateLevel(user.xp||0);let users=getUsers(),i=users.findIndex(u=>u.id===user.id);if(i>=0)users[i]=user;else users.push(user);saveUsers(users);return user}function updateProject(project){let all=getProjects(),i=all.findIndex(p=>p.id===project.id);if(i>=0)all[i]=project;else all.push(project);saveProjects(all);return project}function history(user,descricao,xp=0,tipo='atividade'){user.historico=user.historico||[];user.historico.unshift({descricao,xp,tipo,data:new Date().toISOString()})}function addXP(user,amount,description){let before=calculateLevel(user.xp||0);user.xp=(user.xp||0)+amount;history(user,description,amount,'xp');let after=calculateLevel(user.xp);if(after>before)history(user,`Você alcançou o nível ${after}.`,0,'nivel');user.nivel=after;return user}
-function badgesFor(user){return user.tipo==='escola'?[['primeiro-projeto','🏫','Primeiro Projeto','Publicou seu primeiro projeto.',u=>(u.projetos||[]).length>=1],['escola-ativa','📢','Escola Ativa','Publicou 5 projetos.',u=>(u.projetos||[]).length>=5],['comunidade','🤝','Comunidade Conectada','Recebeu apoio de 10 colaboradores.',u=>(u.colaboradores||[]).length>=10],['transformadora','🌱','Escola Transformadora','Concluiu 5 projetos.',u=>(u.projetosConcluidos||[]).length>=5],['impacto-escola','⭐','Escola de Impacto','Recebeu apoio de 25 colaboradores.',u=>(u.colaboradores||[]).length>=25],['referencia','🏆','Referência Educacional','Alcançou 500 XP.',u=>u.xp>=500]]:[['primeiro-passo','🏅','Primeiro Passo','Realizou sua primeira colaboração.',u=>(u.projetosColaborados||[]).length>=1],['mao-amiga','🤝','Mão Amiga','Você já ajudou diversos projetos.',u=>(u.projetosColaborados||[]).length>=5],['ativo','🌟','Colaborador Ativo','Participação constante na comunidade.',u=>(u.projetosColaborados||[]).length>=10],['apoio','🔥','Apoio Constante','Você continua contribuindo com a comunidade.',u=>(u.projetosColaborados||[]).length>=15],['mudanca','💜','Agente da Mudança','Seu impacto já alcançou muitos projetos.',u=>(u.projetosColaborados||[]).length>=25],['maximo','🏆','Impacto Máximo','Um dos maiores colaboradores do LearnHub.',u=>u.xp>=500]]}
-function checkAchievements(user){let unlocked=[];user.emblemas=user.emblemas||[];badgesFor(user).forEach(([id,icon,nome,descricao,test])=>{if(test(user)&&!user.emblemas.some(b=>b.id===id)){let b={id,icon,nome,descricao,xp:XP.EMBLEMA,desbloqueado:true};user.emblemas.push(b);addXP(user,XP.EMBLEMA,`Você desbloqueou o emblema ${nome}.`);unlocked.push(b)}});return unlocked}
-function seed(){if(localStorage.getItem(K.seed))return;let school={id:'escola-demo',nome:'Escola Comunidade Viva',email:'escola@learnhub.demo',senha:'',tipo:'escola',nomeEscola:'Escola Comunidade Viva',endereco:'Rua da Educação, 100',cidade:'São Paulo',estado:'SP',foto:null,xp:0,nivel:1,projetos:[],colaboradores:[],projetosConcluidos:[],emblemas:[],historico:[],dataCadastro:new Date().toISOString()};let users=getUsers();if(!users.some(u=>u.id===school.id)){users.push(school);saveUsers(users)}let data=[['Horta Escolar','Uma horta colaborativa para aproximar estudantes da alimentação saudável.','Criar um espaço verde de aprendizagem.','Sustentabilidade','sementes, ferramentas e irrigação','Em andamento','🌱'],['Biblioteca Comunitária','Renovação do acervo e criação de um canto de leitura acolhedor.','Ampliar o acesso à leitura.','Leitura','livros, estantes e almofadas','Planejamento','📚'],['Laboratório de Ciências','Equipar experiências práticas que tornam a ciência mais próxima.','Montar um laboratório acessível.','Ciência','microscópios e kits experimentais','Em andamento','🔬'],['Projeto de Robótica','Oficinas de robótica e programação para jovens criadores.','Ensinar tecnologia através da prática.','Tecnologia','kits de robótica e notebooks','Em andamento','🤖'],['Espaço de Leitura','Um lugar calmo para descobrir novas histórias todos os dias.','Criar uma cultura de leitura.','Leitura','livros e mobiliário','Concluído','📖']];let projects=data.map((d,i)=>({id:`demo-${i}`,titulo:d[0],escolaId:school.id,escolaNome:school.nome,descricao:d[1],objetivo:d[2],categoria:d[3],recursos:d[4],imagem:d[6],status:d[5],colaboradores:[],visualizacoes:0,dataCriacao:new Date().toISOString()}));saveProjects(projects);localStorage.setItem(K.seed,'true')}
-return{XP,id,getUsers,saveUsers,getProjects,saveProjects,getLoggedUser,setLoggedUser,logout,updateUser,updateProject,history,addXP,calculateLevel,levelInfo,badgesFor,checkAchievements,seed};})();LearnHubStore.seed();
+const LearnHubStore = (() => {
+
+    const K = {
+        users: 'learnhub_usuarios',
+        projects: 'learnhub_projetos',
+        session: 'usuarioLogado',
+        seed: 'learnhub_inicializado'
+    };
+
+    const XP = {
+        CONTA: 10,
+        VISUALIZAR: 1,
+        COLABORAR: 10,
+        CONCLUIR_COLABORACAO: 20,
+        PUBLICAR: 10,
+        CONCLUIR_PROJETO: 30,
+        EMBLEMA: 5
+    };
+
+    const read = k =>
+        JSON.parse(
+            localStorage.getItem(k) || '[]'
+        );
+
+    const write = (k, v) =>
+        localStorage.setItem(
+            k,
+            JSON.stringify(v)
+        );
+
+    const id = p =>
+        `${p}-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 7)}`;
+
+    const levels = [
+        0,
+        50,
+        100,
+        200,
+        350,
+        500,
+        700
+    ];
+
+    const collaboratorTitles = [
+        'Novo Colaborador',
+        'Colaborador',
+        'Colaborador Ativo',
+        'Agente da Mudança',
+        'Impacto Social',
+        'Embaixador da Educação',
+        'Agente de Transformação'
+    ];
+
+    const schoolTitles = [
+        'Escola Iniciante',
+        'Escola Participativa',
+        'Escola Conectada',
+        'Escola Inovadora',
+        'Escola Transformadora',
+        'Escola Referência',
+        'Referência Educacional'
+    ];
+
+    function getUsers() {
+        return read(K.users);
+    }
+
+    function saveUsers(v) {
+        write(K.users, v);
+    }
+
+    function getProjects() {
+        return read(K.projects);
+    }
+
+    function saveProjects(v) {
+        write(K.projects, v);
+    }
+
+    function calculateLevel(xp) {
+
+        let level = 1;
+
+        levels.forEach((v, i) => {
+
+            if (xp >= v) {
+                level = i + 1;
+            }
+
+        });
+
+        return level;
+    }
+
+    function levelInfo(user) {
+
+        let level = calculateLevel(user.xp || 0);
+
+        let next = levels[level] ?? null;
+
+        let start = levels[level - 1];
+
+        let xp = user.xp || 0;
+
+        return {
+            level,
+            title: (
+                user.tipo === 'escola'
+                    ? schoolTitles
+                    : collaboratorTitles
+            )[level - 1],
+
+            next,
+            start,
+
+            remaining:
+                next === null
+                    ? 0
+                    : next - xp,
+
+            percent:
+                next === null
+                    ? 100
+                    : Math.min(
+                        100,
+                        ((xp - start) /
+                            (next - start)) *
+                            100
+                    )
+        };
+    }
+
+    function getLoggedUser() {
+
+        let s =
+            localStorage.getItem(
+                K.session
+            );
+
+        return s
+            ? getUsers().find(
+                u => u.id === s
+            ) || null
+            : null;
+    }
+
+    function setLoggedUser(id) {
+
+        localStorage.setItem(
+            K.session,
+            id
+        );
+    }
+
+    function logout() {
+
+        localStorage.removeItem(
+            K.session
+        );
+    }
+
+    function updateUser(user) {
+
+        user.nivel =
+            calculateLevel(
+                user.xp || 0
+            );
+
+        let users = getUsers();
+
+        let i =
+            users.findIndex(
+                u => u.id === user.id
+            );
+
+        if (i >= 0) {
+            users[i] = user;
+        } else {
+            users.push(user);
+        }
+
+        saveUsers(users);
+
+        return user;
+    }
+
+    function updateProject(project) {
+
+        let all = getProjects();
+
+        let i =
+            all.findIndex(
+                p => p.id === project.id
+            );
+
+        if (i >= 0) {
+            all[i] = project;
+        } else {
+            all.push(project);
+        }
+
+        saveProjects(all);
+
+        return project;
+    }
+
+    function history(
+        user,
+        descricao,
+        xp = 0,
+        tipo = 'atividade'
+    ) {
+
+        user.historico =
+            user.historico || [];
+
+        user.historico.unshift({
+            descricao,
+            xp,
+            tipo,
+            data: new Date().toISOString()
+        });
+    }
+
+    function addXP(
+        user,
+        amount,
+        description
+    ) {
+
+        let before =
+            calculateLevel(
+                user.xp || 0
+            );
+
+        user.xp =
+            (user.xp || 0) + amount;
+
+        history(
+            user,
+            description,
+            amount,
+            'xp'
+        );
+
+        let after =
+            calculateLevel(
+                user.xp
+            );
+
+        if (after > before) {
+
+            history(
+                user,
+                `Você alcançou o nível ${after}.`,
+                0,
+                'nivel'
+            );
+        }
+
+        user.nivel = after;
+
+        return user;
+    }
+
+    function badgesFor(user) {
+
+        return user.tipo === 'escola'
+
+            ? [
+                [
+                    'primeiro-projeto',
+                    '🏫',
+                    'Primeiro Projeto',
+                    'Publicou seu primeiro projeto.',
+                    u =>
+                        (u.projetos || [])
+                            .length >= 1
+                ],
+
+                [
+                    'escola-ativa',
+                    '📢',
+                    'Escola Ativa',
+                    'Publicou 5 projetos.',
+                    u =>
+                        (u.projetos || [])
+                            .length >= 5
+                ],
+
+                [
+                    'comunidade',
+                    '🤝',
+                    'Comunidade Conectada',
+                    'Recebeu apoio de 10 colaboradores.',
+                    u =>
+                        (u.colaboradores || [])
+                            .length >= 10
+                ],
+
+                [
+                    'transformadora',
+                    '🌱',
+                    'Escola Transformadora',
+                    'Concluiu 5 projetos.',
+                    u =>
+                        (u.projetosConcluidos || [])
+                            .length >= 5
+                ],
+
+                [
+                    'impacto-escola',
+                    '⭐',
+                    'Escola de Impacto',
+                    'Recebeu apoio de 25 colaboradores.',
+                    u =>
+                        (u.colaboradores || [])
+                            .length >= 25
+                ],
+
+                [
+                    'referencia',
+                    '🏆',
+                    'Referência Educacional',
+                    'Alcançou 500 XP.',
+                    u =>
+                        u.xp >= 500
+                ]
+            ]
+
+            : [
+                [
+                    'primeiro-passo',
+                    '🏅',
+                    'Primeiro Passo',
+                    'Realizou sua primeira colaboração.',
+                    u =>
+                        (u.projetosColaborados || [])
+                            .length >= 1
+                ],
+
+                [
+                    'mao-amiga',
+                    '🤝',
+                    'Mão Amiga',
+                    'Você já ajudou diversos projetos.',
+                    u =>
+                        (u.projetosColaborados || [])
+                            .length >= 5
+                ],
+
+                [
+                    'ativo',
+                    '🌟',
+                    'Colaborador Ativo',
+                    'Participação constante na comunidade.',
+                    u =>
+                        (u.projetosColaborados || [])
+                            .length >= 10
+                ],
+
+                [
+                    'apoio',
+                    '🔥',
+                    'Apoio Constante',
+                    'Você continua contribuindo com a comunidade.',
+                    u =>
+                        (u.projetosColaborados || [])
+                            .length >= 15
+                ],
+
+                [
+                    'mudanca',
+                    '💜',
+                    'Agente da Mudança',
+                    'Seu impacto já alcançou muitos projetos.',
+                    u =>
+                        (u.projetosColaborados || [])
+                            .length >= 25
+                ],
+
+                [
+                    'maximo',
+                    '🏆',
+                    'Impacto Máximo',
+                    'Um dos maiores colaboradores do LearnHub.',
+                    u =>
+                        u.xp >= 500
+                ]
+            ];
+    }
+
+    function checkAchievements(user) {
+
+        let unlocked = [];
+
+        user.emblemas =
+            user.emblemas || [];
+
+        badgesFor(user).forEach(
+            ([
+                id,
+                icon,
+                nome,
+                descricao,
+                test
+            ]) => {
+
+                if (
+                    test(user) &&
+                    !user.emblemas.some(
+                        b => b.id === id
+                    )
+                ) {
+
+                    let b = {
+                        id,
+                        icon,
+                        nome,
+                        descricao,
+                        xp: XP.EMBLEMA,
+                        desbloqueado: true
+                    };
+
+                    user.emblemas.push(b);
+
+                    addXP(
+                        user,
+                        XP.EMBLEMA,
+                        `Você desbloqueou o emblema ${nome}.`
+                    );
+
+                    unlocked.push(b);
+                }
+            }
+        );
+
+        return unlocked;
+    }
+
+    function seed() {
+
+        if (
+            localStorage.getItem(
+                K.seed
+            )
+        ) {
+            return;
+        }
+
+        let school = {
+
+            id: 'escola-demo',
+
+            nome:
+                'Escola Comunidade Viva',
+
+            email:
+                'escola@learnhub.demo',
+
+            senha: '',
+
+            tipo: 'escola',
+
+            nomeEscola:
+                'Escola Comunidade Viva',
+
+            endereco:
+                'Rua da Educação, 100',
+
+            cidade:
+                'São Paulo',
+
+            estado:
+                'SP',
+
+            foto: null,
+
+            xp: 0,
+
+            nivel: 1,
+
+            projetos: [],
+
+            colaboradores: [],
+
+            projetosConcluidos: [],
+
+            emblemas: [],
+
+            historico: [],
+
+            dataCadastro:
+                new Date().toISOString()
+        };
+
+        let users =
+            getUsers();
+
+        if (
+            !users.some(
+                u => u.id === school.id
+            )
+        ) {
+
+            users.push(school);
+
+            saveUsers(users);
+        }
+
+        let data = [
+
+            [
+                'Horta Escolar',
+                'Uma horta colaborativa para aproximar estudantes da alimentação saudável.',
+                'Criar um espaço verde de aprendizagem.',
+                'Sustentabilidade',
+                'sementes, ferramentas e irrigação',
+                'Em andamento',
+                '🌱'
+            ],
+
+            [
+                'Biblioteca Comunitária',
+                'Renovação do acervo e criação de um canto de leitura acolhedor.',
+                'Ampliar o acesso à leitura.',
+                'Leitura',
+                'livros, estantes e almofadas',
+                'Planejamento',
+                '📚'
+            ],
+
+            [
+                'Laboratório de Ciências',
+                'Equipar experiências práticas que tornam a ciência mais próxima.',
+                'Montar um laboratório acessível.',
+                'Ciência',
+                'microscópios e kits experimentais',
+                'Em andamento',
+                '🔬'
+            ],
+
+            [
+                'Projeto de Robótica',
+                'Oficinas de robótica e programação para jovens criadores.',
+                'Ensinar tecnologia através da prática.',
+                'Tecnologia',
+                'kits de robótica e notebooks',
+                'Em andamento',
+                '🤖'
+            ],
+
+            [
+                'Espaço de Leitura',
+                'Um lugar calmo para descobrir novas histórias todos os dias.',
+                'Criar uma cultura de leitura.',
+                'Leitura',
+                'livros e mobiliário',
+                'Concluído',
+                '📖'
+            ]
+
+        ];
+
+        let projects =
+            data.map(
+                (d, i) => ({
+
+                    id: `demo-${i}`,
+
+                    titulo: d[0],
+
+                    escolaId:
+                        school.id,
+
+                    escolaNome:
+                        school.nome,
+
+                    descricao:
+                        d[1],
+
+                    objetivo:
+                        d[2],
+
+                    categoria:
+                        d[3],
+
+                    recursos:
+                        d[4],
+
+                    imagem:
+                        d[6],
+
+                    status:
+                        d[5],
+
+                    colaboradores: [],
+
+                    visualizacoes: 0,
+
+                    dataCriacao:
+                        new Date().toISOString()
+
+                })
+            );
+
+        saveProjects(
+            projects
+        );
+
+        localStorage.setItem(
+            K.seed,
+            'true'
+        );
+    }
+
+    return {
+
+        XP,
+        id,
+
+        getUsers,
+        saveUsers,
+
+        getProjects,
+        saveProjects,
+
+        getLoggedUser,
+        setLoggedUser,
+
+        logout,
+
+        updateUser,
+        updateProject,
+
+        history,
+        addXP,
+
+        calculateLevel,
+        levelInfo,
+
+        badgesFor,
+        checkAchievements,
+
+        seed
+
+    };
+
+})();
+
+LearnHubStore.seed();

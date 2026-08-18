@@ -1,1 +1,264 @@
-function verificarLogin(){const u=LearnHubStore.getLoggedUser();if(!u){location.href='login.html';return null}return u}function obterUsuarioLogado(){return LearnHubStore.getLoggedUser()}function fazerLogin(email,senha){const u=LearnHubStore.getUsers().find(x=>x.email.toLowerCase()===email.toLowerCase()&&x.senha===senha);if(u)LearnHubStore.setLoggedUser(u.id);return u}function fazerLogout(){LearnHubStore.logout();location.href='login.html'}function atualizarUsuario(u){return LearnHubStore.updateUser(u)}function toast(message,error=false){let t=document.createElement('div');t.className=`toast ${error?'error':''}`;t.textContent=message;document.body.append(t);setTimeout(()=>t.remove(),3200)}function renderNav(active=''){let u=obterUsuarioLogado();if(!u)return;document.querySelectorAll('[data-nav]').forEach(el=>el.innerHTML=`<nav class="nav container"><a class="brand" href="hub.html">LearnHub</a><div class="nav-links"><a class="${active==='hub'?'active':''}" href="hub.html">Projetos</a><a class="${active==='progressao'?'active':''}" href="progressao.html">Progressão</a><a class="${active==='perfil'?'active':''}" href="perfil.html">Perfil</a></div><div class="nav-actions">${u.tipo==='escola'?'<a class="btn btn-primary" href="adicionar-projeto.html">+ Adicionar projeto</a>':''}<span class="user-name muted">${u.nome}</span><button class="btn" onclick="fazerLogout()">Sair</button></div></nav>`)}function showAchievements(items){items.forEach((b,i)=>setTimeout(()=>{let m=document.createElement('div');m.className='modal-overlay';m.innerHTML=`<div class="achievement panel"><div class="emoji">${b.icon}</div><h2>🎉 Nova conquista!</h2><p>Você desbloqueou <strong>${b.nome}</strong></p><span class="badge">+${b.xp} XP</span><p><button class="btn btn-primary">Continuar</button></p></div>`;m.querySelector('button').onclick=()=>m.remove();document.body.append(m)},i*500))}
+function verificarLogin() {
+
+    const u =
+        LearnHubStore.getLoggedUser();
+
+    if (!u) {
+
+        location.href =
+            'login.html';
+
+        return null;
+    }
+
+    return u;
+}
+
+function obterUsuarioLogado() {
+
+    return LearnHubStore
+        .getLoggedUser();
+}
+
+function fazerLogin(
+    email,
+    senha
+) {
+
+    const u =
+        LearnHubStore
+            .getUsers()
+            .find(
+                x =>
+                    x.email
+                        .toLowerCase() ===
+                    email.toLowerCase() &&
+                    x.senha === senha
+            );
+
+    if (u) {
+
+        LearnHubStore.setLoggedUser(
+            u.id
+        );
+    }
+
+    return u;
+}
+
+function fazerLogout() {
+
+    LearnHubStore.logout();
+
+    location.href =
+        'login.html';
+}
+
+function atualizarUsuario(u) {
+
+    return LearnHubStore
+        .updateUser(u);
+}
+
+function toast(
+    message,
+    error = false
+) {
+
+    let t =
+        document.createElement(
+            'div'
+        );
+
+    t.className =
+        `toast ${
+            error
+                ? 'error'
+                : ''
+        }`;
+
+    t.textContent =
+        message;
+
+    document.body.append(t);
+
+    setTimeout(
+        () =>
+            t.remove(),
+        3200
+    );
+}
+
+function renderNav(
+    active = ''
+) {
+
+    let u =
+        obterUsuarioLogado();
+
+    if (!u) {
+        return;
+    }
+
+    document
+        .querySelectorAll(
+            '[data-nav]'
+        )
+        .forEach(
+            el => {
+
+                el.innerHTML = `
+
+                    <nav class="nav container">
+
+                        <a
+                            class="brand"
+                            href="hub.html"
+                        >
+                            LearnHub
+                        </a>
+
+                        <div class="nav-links">
+
+                            <a
+                                class="${
+                                    active === 'hub'
+                                        ? 'active'
+                                        : ''
+                                }"
+                                href="hub.html"
+                            >
+                                Projetos
+                            </a>
+
+                            <a
+                                class="${
+                                    active === 'progressao'
+                                        ? 'active'
+                                        : ''
+                                }"
+                                href="progressao.html"
+                            >
+                                Progressão
+                            </a>
+
+                            <a
+                                class="${
+                                    active === 'perfil'
+                                        ? 'active'
+                                        : ''
+                                }"
+                                href="perfil.html"
+                            >
+                                Perfil
+                            </a>
+
+                        </div>
+
+                        <div class="nav-actions">
+
+                            ${
+                                u.tipo === 'escola'
+                                    ? `
+                                        <a
+                                            class="btn btn-primary"
+                                            href="adicionar-projeto.html"
+                                        >
+                                            + Adicionar projeto
+                                        </a>
+                                    `
+                                    : ''
+                            }
+
+                            <span class="user-name muted">
+                                ${u.nome}
+                            </span>
+
+                            <button
+                                class="btn"
+                                onclick="fazerLogout()"
+                            >
+                                Sair
+                            </button>
+
+                        </div>
+
+                    </nav>
+
+                `;
+            }
+        );
+}
+
+function showAchievements(
+    items
+) {
+
+    items.forEach(
+        (b, i) => {
+
+            setTimeout(
+                () => {
+
+                    let m =
+                        document.createElement(
+                            'div'
+                        );
+
+                    m.className =
+                        'modal-overlay';
+
+                    m.innerHTML = `
+
+                        <div class="achievement panel">
+
+                            <div class="emoji">
+                                ${b.icon}
+                            </div>
+
+                            <h2>
+                                🎉 Nova conquista!
+                            </h2>
+
+                            <p>
+                                Você desbloqueou
+                                <strong>
+                                    ${b.nome}
+                                </strong>
+                            </p>
+
+                            <span class="badge">
+                                +${b.xp} XP
+                            </span>
+
+                            <p>
+
+                                <button
+                                    class="btn btn-primary"
+                                >
+                                    Continuar
+                                </button>
+
+                            </p>
+
+                        </div>
+
+                    `;
+
+                    m
+                        .querySelector(
+                            'button'
+                        )
+                        .onclick = () =>
+                            m.remove();
+
+                    document.body.append(
+                        m
+                    );
+
+                },
+                i * 500
+            );
+        }
+    );
+}
