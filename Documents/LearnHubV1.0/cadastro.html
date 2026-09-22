@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
@@ -7,21 +7,31 @@
 
     <title>Cadastro | LearnHub</title>
 
+    <script src="js/theme.js"></script>
+
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/forms.css">
 </head>
 
 <body>
 
-    <header class="container nav">
+    <header class="container nav public-nav">
 
         <a class="brand" href="index.html">
             LearnHub
         </a>
 
-        <a class="btn" href="login.html">
-            Já tenho conta
-        </a>
+        <div class="nav-actions">
+            <button
+                class="theme-toggle"
+                type="button"
+                data-theme-toggle
+            ></button>
+
+            <a class="btn" href="login.html">
+                Já tenho conta
+            </a>
+        </div>
 
     </header>
 

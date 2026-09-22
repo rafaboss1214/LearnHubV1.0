@@ -4,36 +4,34 @@ const LearnHubStore = (() => {
         users: 'learnhub_usuarios',
         projects: 'learnhub_projetos',
         session: 'usuarioLogado',
-        seed: 'learnhub_inicializado'
+        seed: 'learnhub_inicializado',
+        schema: 'learnhub_schema_version'
+    };
+
+    const XP_ACTIONS = {
+        CREATE_ACCOUNT: 10,
+        VIEW_PROJECT: 1,
+        COLLABORATE_PROJECT: 10,
+        COMMENT_PROJECT: 3,
+        COMPLETE_COLLABORATION: 20,
+        PUBLISH_PROJECT: 10,
+        COMPLETE_PROJECT: 30,
+        UNLOCK_BADGE: 5
     };
 
     const XP = {
-        CONTA: 10,
-        VISUALIZAR: 1,
-        COLABORAR: 10,
-        CONCLUIR_COLABORACAO: 20,
-        PUBLICAR: 10,
-        CONCLUIR_PROJETO: 30,
-        EMBLEMA: 5
+        CONTA: XP_ACTIONS.CREATE_ACCOUNT,
+        VISUALIZAR: XP_ACTIONS.VIEW_PROJECT,
+        COLABORAR: XP_ACTIONS.COLLABORATE_PROJECT,
+        COMENTAR: XP_ACTIONS.COMMENT_PROJECT,
+        CONCLUIR_COLABORACAO:
+            XP_ACTIONS.COMPLETE_COLLABORATION,
+        PUBLICAR: XP_ACTIONS.PUBLISH_PROJECT,
+        CONCLUIR_PROJETO: XP_ACTIONS.COMPLETE_PROJECT,
+        EMBLEMA: XP_ACTIONS.UNLOCK_BADGE
     };
 
-    const read = k =>
-        JSON.parse(
-            localStorage.getItem(k) || '[]'
-        );
-
-    const write = (k, v) =>
-        localStorage.setItem(
-            k,
-            JSON.stringify(v)
-        );
-
-    const id = p =>
-        `${p}-${Date.now()}-${Math.random()
-            .toString(36)
-            .slice(2, 7)}`;
-
-    const levels = [
+    const LEVELS = [
         0,
         50,
         100,
@@ -43,7 +41,7 @@ const LearnHubStore = (() => {
         700
     ];
 
-    const collaboratorTitles = [
+    const COLLABORATOR_TITLES = [
         'Novo Colaborador',
         'Colaborador',
         'Colaborador Ativo',
@@ -53,7 +51,7 @@ const LearnHubStore = (() => {
         'Agente de Transformação'
     ];
 
-    const schoolTitles = [
+    const SCHOOL_TITLES = [
         'Escola Iniciante',
         'Escola Participativa',
         'Escola Conectada',
@@ -63,32 +61,253 @@ const LearnHubStore = (() => {
         'Referência Educacional'
     ];
 
-    function getUsers() {
-        return read(K.users);
+    function read(key, fallback = []) {
+
+        try {
+
+            const value = localStorage.getItem(key);
+
+            return value
+                ? JSON.parse(value)
+                : fallback;
+
+        } catch (error) {
+
+            console.warn(
+                `Não foi possível ler ${key}.`,
+                error
+            );
+
+            return fallback;
+        }
     }
 
-    function saveUsers(v) {
-        write(K.users, v);
+    function write(key, value) {
+
+        localStorage.setItem(
+            key,
+            JSON.stringify(value)
+        );
+    }
+
+    function id(prefix) {
+
+        return `${prefix}-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 7)}`;
+    }
+
+    function unique(values) {
+
+        return [
+            ...new Set(
+                Array.isArray(values)
+                    ? values.filter(Boolean)
+                    : []
+            )
+        ];
+    }
+
+    function normalizeComment(comment) {
+
+        return {
+            ...comment,
+            id: comment.id || id('comment'),
+            usuarioId:
+                comment.usuarioId ||
+                comment.userId ||
+                '',
+            nome:
+                comment.nome ||
+                comment.usuarioNome ||
+                'Usuário LearnHub',
+            foto: comment.foto || null,
+            texto: String(comment.texto || '').trim(),
+            data:
+                comment.data ||
+                new Date().toISOString()
+        };
+    }
+
+    function normalizeMessage(message) {
+
+        return {
+            ...message,
+            id: message.id || id('message'),
+            remetenteId: message.remetenteId || message.senderId || '',
+            destinatarioId: message.destinatarioId || message.recipientId || '',
+            texto: String(message.texto || message.message || '').trim(),
+            data: message.data || new Date().toISOString()
+        };
+    }
+
+    function normalizeProject(project) {
+
+        const image =
+            project.banner ||
+            project.imagem ||
+            '';
+
+        return {
+            ...project,
+            id: project.id || id('project'),
+            titulo: String(project.titulo || 'Projeto sem título'),
+            escolaId: project.escolaId || '',
+            escolaNome:
+                project.escolaNome ||
+                'Escola LearnHub',
+            descricao: String(project.descricao || ''),
+            objetivo: String(project.objetivo || ''),
+            categoria: project.categoria || 'Outro',
+            recursos:
+                project.recursos ||
+                project.necessidades ||
+                '',
+            necessidades:
+                project.necessidades ||
+                project.recursos ||
+                '',
+            imagem: image,
+            banner: image,
+            status: project.status || 'Planejamento',
+            colaboradores: unique(project.colaboradores),
+            visualizacoes: Number(project.visualizacoes) || 0,
+            comentarios: Array.isArray(project.comentarios)
+                ? project.comentarios
+                    .map(normalizeComment)
+                    .filter(comment => comment.texto)
+                : [],
+            mensagens: Array.isArray(project.mensagens)
+                ? project.mensagens
+                    .map(normalizeMessage)
+                    .filter(message =>
+                        message.texto &&
+                        message.remetenteId &&
+                        message.destinatarioId
+                    )
+                : [],
+            dataCriacao:
+                project.dataCriacao ||
+                new Date().toISOString(),
+            dataAtualizacao:
+                project.dataAtualizacao ||
+                project.dataCriacao ||
+                new Date().toISOString(),
+            conclusaoRecompensada:
+                Boolean(project.conclusaoRecompensada)
+        };
+    }
+
+    function normalizeUser(user) {
+
+        const normalized = {
+            ...user,
+            id: user.id || id('user'),
+            nome: user.nome || 'Usuário LearnHub',
+            email: String(user.email || '').toLowerCase(),
+            senha: user.senha || '',
+            tipo: user.tipo || 'colaborador',
+            foto: user.foto || null,
+            descricao: user.descricao || '',
+            xp: Number(user.xp) || 0,
+            nivel: calculateLevel(Number(user.xp) || 0),
+            emblemas: Array.isArray(user.emblemas)
+                ? user.emblemas
+                : [],
+            historico: Array.isArray(user.historico)
+                ? user.historico
+                : [],
+            recompensasRegistradas: unique(
+                user.recompensasRegistradas
+            ),
+            comentarios: unique(user.comentarios),
+            dataCadastro:
+                user.dataCadastro ||
+                new Date().toISOString()
+        };
+
+        if (normalized.tipo === 'escola') {
+
+            normalized.nomeEscola =
+                user.nomeEscola ||
+                normalized.nome;
+
+            normalized.endereco = user.endereco || '';
+            normalized.cidade = user.cidade || '';
+            normalized.estado = user.estado || '';
+            normalized.projetos = unique(user.projetos);
+            normalized.colaboradores = unique(user.colaboradores);
+            normalized.projetosConcluidos = unique(
+                user.projetosConcluidos
+            );
+
+        } else if (
+            normalized.tipo === 'admin' ||
+            normalized.tipo === 'administrador'
+        ) {
+
+            normalized.projetos = unique(user.projetos);
+
+        } else {
+
+            normalized.tipo = 'colaborador';
+            normalized.projetosColaborados = unique(
+                user.projetosColaborados
+            );
+            normalized.projetosConcluidos = unique(
+                user.projetosConcluidos
+            );
+            normalized.projetosVisualizados = unique(
+                user.projetosVisualizados
+            );
+        }
+
+        return normalized;
+    }
+
+    function getUsers() {
+
+        const users = read(K.users);
+
+        return Array.isArray(users)
+            ? users.map(normalizeUser)
+            : [];
+    }
+
+    function saveUsers(users) {
+
+        write(
+            K.users,
+            users.map(normalizeUser)
+        );
     }
 
     function getProjects() {
-        return read(K.projects);
+
+        const projects = read(K.projects);
+
+        return Array.isArray(projects)
+            ? projects.map(normalizeProject)
+            : [];
     }
 
-    function saveProjects(v) {
-        write(K.projects, v);
+    function saveProjects(projects) {
+
+        write(
+            K.projects,
+            projects.map(normalizeProject)
+        );
     }
 
     function calculateLevel(xp) {
 
         let level = 1;
 
-        levels.forEach((v, i) => {
+        LEVELS.forEach((minimum, index) => {
 
-            if (xp >= v) {
-                level = i + 1;
+            if (xp >= minimum) {
+                level = index + 1;
             }
-
         });
 
         return level;
@@ -96,147 +315,240 @@ const LearnHubStore = (() => {
 
     function levelInfo(user) {
 
-        let level = calculateLevel(user.xp || 0);
-
-        let next = levels[level] ?? null;
-
-        let start = levels[level - 1];
-
-        let xp = user.xp || 0;
+        const xp = Number(user.xp) || 0;
+        const level = calculateLevel(xp);
+        const next = LEVELS[level] ?? null;
+        const start = LEVELS[level - 1];
+        const titles =
+            user.tipo === 'escola'
+                ? SCHOOL_TITLES
+                : COLLABORATOR_TITLES;
 
         return {
             level,
-            title: (
-                user.tipo === 'escola'
-                    ? schoolTitles
-                    : collaboratorTitles
-            )[level - 1],
-
+            title:
+                titles[level - 1] ||
+                titles[titles.length - 1],
+            nextTitle:
+                next === null
+                    ? null
+                    : titles[level] || titles[titles.length - 1],
             next,
             start,
-
             remaining:
                 next === null
                     ? 0
-                    : next - xp,
-
+                    : Math.max(0, next - xp),
             percent:
                 next === null
                     ? 100
                     : Math.min(
                         100,
-                        ((xp - start) /
-                            (next - start)) *
-                            100
+                        Math.max(
+                            0,
+                            ((xp - start) / (next - start)) * 100
+                        )
                     )
         };
     }
 
-    function getLoggedUser() {
+    function levelRoadmap(user) {
 
-        let s =
-            localStorage.getItem(
-                K.session
-            );
+        const xp = Number(user.xp) || 0;
+        const titles =
+            user.tipo === 'escola'
+                ? SCHOOL_TITLES
+                : COLLABORATOR_TITLES;
 
-        return s
-            ? getUsers().find(
-                u => u.id === s
-            ) || null
-            : null;
+        return LEVELS.map((minimum, index) => ({
+            level: index + 1,
+            title: titles[index] || titles[titles.length - 1],
+            minimum,
+            unlocked: xp >= minimum,
+            current: calculateLevel(xp) === index + 1
+        }));
     }
 
-    function setLoggedUser(id) {
+    function getLoggedUser() {
 
-        localStorage.setItem(
-            K.session,
-            id
-        );
+        const sessionId = localStorage.getItem(K.session);
+
+        if (!sessionId) {
+            return null;
+        }
+
+        return getUsers().find(
+            user => user.id === sessionId
+        ) || null;
+    }
+
+    function setLoggedUser(userId) {
+
+        localStorage.setItem(K.session, userId);
     }
 
     function logout() {
 
-        localStorage.removeItem(
-            K.session
-        );
+        localStorage.removeItem(K.session);
     }
 
     function updateUser(user) {
 
-        user.nivel =
-            calculateLevel(
-                user.xp || 0
-            );
+        const normalized = normalizeUser(user);
+        const users = getUsers();
+        const index = users.findIndex(
+            item => item.id === normalized.id
+        );
 
-        let users = getUsers();
-
-        let i =
-            users.findIndex(
-                u => u.id === user.id
-            );
-
-        if (i >= 0) {
-            users[i] = user;
+        if (index >= 0) {
+            users[index] = normalized;
         } else {
-            users.push(user);
+            users.push(normalized);
         }
 
         saveUsers(users);
 
-        return user;
+        return normalized;
     }
 
     function updateProject(project) {
 
-        let all = getProjects();
+        const normalized = normalizeProject(project);
+        const projects = getProjects();
+        const index = projects.findIndex(
+            item => item.id === normalized.id
+        );
 
-        let i =
-            all.findIndex(
-                p => p.id === project.id
-            );
-
-        if (i >= 0) {
-            all[i] = project;
+        if (index >= 0) {
+            projects[index] = normalized;
         } else {
-            all.push(project);
+            projects.push(normalized);
         }
 
-        saveProjects(all);
+        saveProjects(projects);
 
-        return project;
+        return normalized;
+    }
+
+    function sendProjectMessage(projectId, senderId, recipientId, text) {
+
+        const body = String(text || '').trim();
+        const projects = getProjects();
+        const project = projects.find(item => item.id === projectId);
+
+        if (!project || !body || senderId === recipientId) {
+            return null;
+        }
+
+        const participants = [project.escolaId, ...project.colaboradores];
+
+        if (
+            !participants.includes(senderId) ||
+            !participants.includes(recipientId) ||
+            ![senderId, recipientId].includes(project.escolaId)
+        ) {
+            return null;
+        }
+
+        const message = normalizeMessage({
+            remetenteId: senderId,
+            destinatarioId: recipientId,
+            texto: body
+        });
+
+        project.mensagens.push(message);
+        updateProject(project);
+
+        return message;
+    }
+
+    function removeProject(projectId) {
+        const allProjects = getProjects();
+        const exists = allProjects.some(project => project.id === projectId);
+
+        if (!exists) {
+            return false;
+        }
+
+        const projects = allProjects.filter(
+            project => project.id !== projectId
+        );
+
+        const users = getUsers().map(user => {
+
+            if (user.tipo === 'escola') {
+
+                user.projetos = user.projetos.filter(
+                    id => id !== projectId
+                );
+
+                user.projetosConcluidos =
+                    user.projetosConcluidos.filter(
+                        id => id !== projectId
+                    );
+
+            } else if (user.tipo === 'colaborador') {
+
+                user.projetosColaborados =
+                    user.projetosColaborados.filter(
+                        id => id !== projectId
+                    );
+
+                user.projetosConcluidos =
+                    user.projetosConcluidos.filter(
+                        id => id !== projectId
+                    );
+
+                user.projetosVisualizados =
+                    user.projetosVisualizados.filter(
+                        id => id !== projectId
+                    );
+            }
+
+            return user;
+        });
+
+        users
+            .filter(user => user.tipo === 'escola')
+            .forEach(school => {
+                school.colaboradores = unique(
+                    projects
+                        .filter(project => project.escolaId === school.id)
+                        .flatMap(project => project.colaboradores)
+                );
+            });
+
+        saveProjects(projects);
+        saveUsers(users);
+
+        return true;
     }
 
     function history(
         user,
-        descricao,
+        description,
         xp = 0,
-        tipo = 'atividade'
+        type = 'atividade'
     ) {
 
-        user.historico =
-            user.historico || [];
+        user.historico = user.historico || [];
 
         user.historico.unshift({
-            descricao,
+            id: id('activity'),
+            descricao: description,
             xp,
-            tipo,
+            tipo: type,
             data: new Date().toISOString()
         });
+
+        user.historico = user.historico.slice(0, 60);
     }
 
-    function addXP(
-        user,
-        amount,
-        description
-    ) {
+    function addXP(user, amount, description) {
 
-        let before =
-            calculateLevel(
-                user.xp || 0
-            );
+        const before = calculateLevel(user.xp || 0);
 
-        user.xp =
-            (user.xp || 0) + amount;
+        user.xp = (user.xp || 0) + amount;
 
         history(
             user,
@@ -245,10 +557,7 @@ const LearnHubStore = (() => {
             'xp'
         );
 
-        let after =
-            calculateLevel(
-                user.xp
-            );
+        const after = calculateLevel(user.xp);
 
         if (after > before) {
 
@@ -262,390 +571,482 @@ const LearnHubStore = (() => {
 
         user.nivel = after;
 
+        return {
+            before,
+            after,
+            leveledUp: after > before
+        };
+    }
+
+    function addXp(userId, amount, description) {
+
+        const user = getUsers().find(
+            item => item.id === userId
+        );
+
+        if (!user) {
+            return null;
+        }
+
+        addXP(
+            user,
+            amount,
+            description || `Você ganhou ${amount} XP.`
+        );
+
+        updateUser(user);
+
         return user;
+    }
+
+    function registerActivity(
+        user,
+        action,
+        description,
+        uniqueKey = ''
+    ) {
+
+        user.recompensasRegistradas =
+            user.recompensasRegistradas || [];
+
+        if (
+            uniqueKey &&
+            user.recompensasRegistradas.includes(uniqueKey)
+        ) {
+            return {
+                awarded: false,
+                amount: 0,
+                leveledUp: false
+            };
+        }
+
+        const amount = XP_ACTIONS[action] || 0;
+
+        if (uniqueKey) {
+            user.recompensasRegistradas.push(uniqueKey);
+        }
+
+        if (amount > 0) {
+
+            const result = addXP(
+                user,
+                amount,
+                description
+            );
+
+            return {
+                awarded: true,
+                amount,
+                leveledUp: result.leveledUp
+            };
+        }
+
+        history(user, description);
+
+        return {
+            awarded: false,
+            amount: 0,
+            leveledUp: false
+        };
+    }
+
+    function getBadgeDefinitions(user) {
+
+        const firstSteps = {
+            id: 'primeiros-passos',
+            icon: '✨',
+            nome: 'Primeiros Passos',
+            descricao: 'Criou sua conta na LearnHub.',
+            meta: 1,
+            progress: item => item.dataCadastro ? 1 : 0
+        };
+
+        if (user.tipo === 'escola') {
+
+            return [
+                firstSteps,
+                {
+                    id: 'escola-ativa',
+                    icon: '🏫',
+                    nome: 'Escola Ativa',
+                    descricao: 'Publicou seu primeiro projeto.',
+                    meta: 1,
+                    progress: item =>
+                        (item.projetos || []).length
+                },
+                {
+                    id: 'transformando-ideias',
+                    icon: '🌱',
+                    nome: 'Transformando Ideias',
+                    descricao: 'Concluiu seu primeiro projeto.',
+                    meta: 1,
+                    progress: item =>
+                        (item.projetosConcluidos || []).length
+                },
+                {
+                    id: 'escola-destaque',
+                    icon: '⭐',
+                    nome: 'Escola Destaque',
+                    descricao: 'Concluiu três projetos.',
+                    meta: 3,
+                    progress: item =>
+                        (item.projetosConcluidos || []).length
+                },
+                {
+                    id: 'comunidade-conectada',
+                    icon: '🤝',
+                    nome: 'Comunidade Conectada',
+                    descricao: 'Recebeu apoio de cinco colaboradores.',
+                    meta: 5,
+                    progress: item =>
+                        (item.colaboradores || []).length
+                },
+                {
+                    id: 'referencia-educacional',
+                    icon: '🏆',
+                    nome: 'Referência Educacional',
+                    descricao: 'Alcançou 500 XP.',
+                    meta: 500,
+                    progress: item => item.xp || 0
+                }
+            ];
+        }
+
+        return [
+            firstSteps,
+            {
+                id: 'primeira-ajuda',
+                icon: '🤝',
+                nome: 'Primeira Ajuda',
+                descricao: 'Colaborou pela primeira vez.',
+                meta: 1,
+                progress: item =>
+                    (item.projetosColaborados || []).length
+            },
+            {
+                id: 'participante-ativo',
+                icon: '🌟',
+                nome: 'Participante Ativo',
+                descricao: 'Colaborou em três projetos.',
+                meta: 3,
+                progress: item =>
+                    (item.projetosColaborados || []).length
+            },
+            {
+                id: 'parceiro-educacao',
+                icon: '💜',
+                nome: 'Parceiro da Educação',
+                descricao: 'Colaborou em cinco projetos.',
+                meta: 5,
+                progress: item =>
+                    (item.projetosColaborados || []).length
+            },
+            {
+                id: 'voz-comunidade',
+                icon: '💬',
+                nome: 'Voz da Comunidade',
+                descricao: 'Publicou cinco comentários.',
+                meta: 5,
+                progress: item =>
+                    (item.comentarios || []).length
+            },
+            {
+                id: 'apoiador-frequente',
+                icon: '🙌',
+                nome: 'Apoiador Frequente',
+                descricao: 'Participou de dez projetos.',
+                meta: 10,
+                progress: item =>
+                    (item.projetosColaborados || []).length
+            },
+            {
+                id: 'embaixador-educacao',
+                icon: '🏆',
+                nome: 'Embaixador da Educação',
+                descricao: 'Alcançou 500 XP.',
+                meta: 500,
+                progress: item => item.xp || 0
+            }
+        ];
     }
 
     function badgesFor(user) {
 
-        return user.tipo === 'escola'
+        const unlockedIds = new Set(
+            (user.emblemas || []).map(badge => badge.id)
+        );
 
-            ? [
-                [
-                    'primeiro-projeto',
-                    '🏫',
-                    'Primeiro Projeto',
-                    'Publicou seu primeiro projeto.',
-                    u =>
-                        (u.projetos || [])
-                            .length >= 1
-                ],
-
-                [
-                    'escola-ativa',
-                    '📢',
-                    'Escola Ativa',
-                    'Publicou 5 projetos.',
-                    u =>
-                        (u.projetos || [])
-                            .length >= 5
-                ],
-
-                [
-                    'comunidade',
-                    '🤝',
-                    'Comunidade Conectada',
-                    'Recebeu apoio de 10 colaboradores.',
-                    u =>
-                        (u.colaboradores || [])
-                            .length >= 10
-                ],
-
-                [
-                    'transformadora',
-                    '🌱',
-                    'Escola Transformadora',
-                    'Concluiu 5 projetos.',
-                    u =>
-                        (u.projetosConcluidos || [])
-                            .length >= 5
-                ],
-
-                [
-                    'impacto-escola',
-                    '⭐',
-                    'Escola de Impacto',
-                    'Recebeu apoio de 25 colaboradores.',
-                    u =>
-                        (u.colaboradores || [])
-                            .length >= 25
-                ],
-
-                [
-                    'referencia',
-                    '🏆',
-                    'Referência Educacional',
-                    'Alcançou 500 XP.',
-                    u =>
-                        u.xp >= 500
-                ]
-            ]
-
-            : [
-                [
-                    'primeiro-passo',
-                    '🏅',
-                    'Primeiro Passo',
-                    'Realizou sua primeira colaboração.',
-                    u =>
-                        (u.projetosColaborados || [])
-                            .length >= 1
-                ],
-
-                [
-                    'mao-amiga',
-                    '🤝',
-                    'Mão Amiga',
-                    'Você já ajudou diversos projetos.',
-                    u =>
-                        (u.projetosColaborados || [])
-                            .length >= 5
-                ],
-
-                [
-                    'ativo',
-                    '🌟',
-                    'Colaborador Ativo',
-                    'Participação constante na comunidade.',
-                    u =>
-                        (u.projetosColaborados || [])
-                            .length >= 10
-                ],
-
-                [
-                    'apoio',
-                    '🔥',
-                    'Apoio Constante',
-                    'Você continua contribuindo com a comunidade.',
-                    u =>
-                        (u.projetosColaborados || [])
-                            .length >= 15
-                ],
-
-                [
-                    'mudanca',
-                    '💜',
-                    'Agente da Mudança',
-                    'Seu impacto já alcançou muitos projetos.',
-                    u =>
-                        (u.projetosColaborados || [])
-                            .length >= 25
-                ],
-
-                [
-                    'maximo',
-                    '🏆',
-                    'Impacto Máximo',
-                    'Um dos maiores colaboradores do LearnHub.',
-                    u =>
-                        u.xp >= 500
-                ]
-            ];
+        return getBadgeDefinitions(user).map(definition => ({
+            id: definition.id,
+            icon: definition.icon,
+            nome: definition.nome,
+            descricao: definition.descricao,
+            meta: definition.meta,
+            progresso: Math.min(
+                definition.meta,
+                Math.max(0, definition.progress(user))
+            ),
+            desbloqueado: unlockedIds.has(definition.id)
+        }));
     }
 
     function checkAchievements(user) {
 
-        let unlocked = [];
+        const unlocked = [];
 
-        user.emblemas =
-            user.emblemas || [];
+        user.emblemas = user.emblemas || [];
 
-        badgesFor(user).forEach(
-            ([
-                id,
-                icon,
-                nome,
-                descricao,
-                test
-            ]) => {
+        getBadgeDefinitions(user).forEach(definition => {
 
-                if (
-                    test(user) &&
-                    !user.emblemas.some(
-                        b => b.id === id
-                    )
-                ) {
+            const alreadyUnlocked = user.emblemas.some(
+                badge => badge.id === definition.id
+            );
 
-                    let b = {
-                        id,
-                        icon,
-                        nome,
-                        descricao,
-                        xp: XP.EMBLEMA,
-                        desbloqueado: true
-                    };
+            if (
+                definition.progress(user) >= definition.meta &&
+                !alreadyUnlocked
+            ) {
 
-                    user.emblemas.push(b);
+                const badge = {
+                    id: definition.id,
+                    icon: definition.icon,
+                    nome: definition.nome,
+                    descricao: definition.descricao,
+                    xp: XP_ACTIONS.UNLOCK_BADGE,
+                    desbloqueado: true,
+                    data: new Date().toISOString()
+                };
 
-                    addXP(
-                        user,
-                        XP.EMBLEMA,
-                        `Você desbloqueou o emblema ${nome}.`
-                    );
+                user.emblemas.push(badge);
 
-                    unlocked.push(b);
-                }
+                registerActivity(
+                    user,
+                    'UNLOCK_BADGE',
+                    `Você desbloqueou o emblema ${definition.nome}.`,
+                    `badge:${definition.id}`
+                );
+
+                unlocked.push(badge);
             }
-        );
+        });
 
         return unlocked;
     }
 
-    function seed() {
+    function checkBadges(userId) {
 
-        if (
-            localStorage.getItem(
-                K.seed
-            )
-        ) {
-            return;
+        const user = getUsers().find(
+            item => item.id === userId
+        );
+
+        if (!user) {
+            return [];
         }
 
-        let school = {
+        const badges = checkAchievements(user);
 
+        updateUser(user);
+
+        return badges;
+    }
+
+    function synchronizeRelations(users, projects) {
+
+        const userMap = new Map(
+            users.map(user => [user.id, user])
+        );
+
+        projects.forEach(project => {
+
+            const school = userMap.get(project.escolaId);
+
+            if (school && school.tipo === 'escola') {
+
+                school.projetos = unique([
+                    ...school.projetos,
+                    project.id
+                ]);
+
+                if (project.status === 'Concluído') {
+
+                    school.projetosConcluidos = unique([
+                        ...school.projetosConcluidos,
+                        project.id
+                    ]);
+                }
+            }
+
+            project.colaboradores.forEach(userId => {
+
+                const collaborator = userMap.get(userId);
+
+                if (
+                    collaborator &&
+                    collaborator.tipo === 'colaborador'
+                ) {
+
+                    collaborator.projetosColaborados = unique([
+                        ...collaborator.projetosColaborados,
+                        project.id
+                    ]);
+                }
+
+                if (school && school.tipo === 'escola') {
+
+                    school.colaboradores = unique([
+                        ...school.colaboradores,
+                        userId
+                    ]);
+                }
+            });
+        });
+    }
+
+    function createInitialData() {
+
+        const school = normalizeUser({
             id: 'escola-demo',
-
-            nome:
-                'Escola Comunidade Viva',
-
-            email:
-                'escola@learnhub.demo',
-
-            senha: '',
-
+            nome: 'Escola Comunidade Viva',
+            email: 'escola@learnhub.demo',
+            senha: 'learnhub123',
             tipo: 'escola',
+            nomeEscola: 'Escola Comunidade Viva',
+            endereco: 'Rua da Educação, 100',
+            cidade: 'São Paulo',
+            estado: 'SP',
+            descricao:
+                'Escola pública comprometida com projetos colaborativos e aprendizagem ativa.',
+            dataCadastro: new Date().toISOString()
+        });
 
-            nomeEscola:
-                'Escola Comunidade Viva',
-
-            endereco:
-                'Rua da Educação, 100',
-
-            cidade:
-                'São Paulo',
-
-            estado:
-                'SP',
-
-            foto: null,
-
-            xp: 0,
-
-            nivel: 1,
-
-            projetos: [],
-
-            colaboradores: [],
-
-            projetosConcluidos: [],
-
-            emblemas: [],
-
-            historico: [],
-
-            dataCadastro:
-                new Date().toISOString()
-        };
-
-        let users =
-            getUsers();
-
-        if (
-            !users.some(
-                u => u.id === school.id
-            )
-        ) {
-
-            users.push(school);
-
-            saveUsers(users);
-        }
-
-        let data = [
-
+        const data = [
             [
                 'Horta Escolar',
                 'Uma horta colaborativa para aproximar estudantes da alimentação saudável.',
                 'Criar um espaço verde de aprendizagem.',
                 'Sustentabilidade',
-                'sementes, ferramentas e irrigação',
+                'Sementes, ferramentas, irrigação e apoio técnico.',
                 'Em andamento',
                 '🌱'
             ],
-
             [
                 'Biblioteca Comunitária',
                 'Renovação do acervo e criação de um canto de leitura acolhedor.',
                 'Ampliar o acesso à leitura.',
                 'Leitura',
-                'livros, estantes e almofadas',
+                'Livros, estantes, almofadas e voluntários para mediação.',
                 'Planejamento',
                 '📚'
             ],
-
             [
                 'Laboratório de Ciências',
-                'Equipar experiências práticas que tornam a ciência mais próxima.',
+                'Experiências práticas que tornam a ciência mais próxima dos estudantes.',
                 'Montar um laboratório acessível.',
                 'Ciência',
-                'microscópios e kits experimentais',
+                'Microscópios, kits experimentais e conhecimento técnico.',
                 'Em andamento',
                 '🔬'
             ],
-
             [
                 'Projeto de Robótica',
                 'Oficinas de robótica e programação para jovens criadores.',
-                'Ensinar tecnologia através da prática.',
+                'Ensinar tecnologia por meio da prática.',
                 'Tecnologia',
-                'kits de robótica e notebooks',
+                'Kits de robótica, notebooks e mentoria voluntária.',
                 'Em andamento',
                 '🤖'
             ],
-
             [
                 'Espaço de Leitura',
                 'Um lugar calmo para descobrir novas histórias todos os dias.',
-                'Criar uma cultura de leitura.',
+                'Fortalecer uma cultura de leitura.',
                 'Leitura',
-                'livros e mobiliário',
+                'Livros e mobiliário.',
                 'Concluído',
                 '📖'
             ]
-
         ];
 
-        let projects =
-            data.map(
-                (d, i) => ({
+        const projects = data.map((item, index) =>
+            normalizeProject({
+                id: `demo-${index}`,
+                titulo: item[0],
+                escolaId: school.id,
+                escolaNome: school.nome,
+                descricao: item[1],
+                objetivo: item[2],
+                categoria: item[3],
+                recursos: item[4],
+                imagem: item[6],
+                status: item[5],
+                dataCriacao: new Date().toISOString()
+            })
+        );
 
-                    id: `demo-${i}`,
+        synchronizeRelations([school], projects);
 
-                    titulo: d[0],
-
-                    escolaId:
-                        school.id,
-
-                    escolaNome:
-                        school.nome,
-
-                    descricao:
-                        d[1],
-
-                    objetivo:
-                        d[2],
-
-                    categoria:
-                        d[3],
-
-                    recursos:
-                        d[4],
-
-                    imagem:
-                        d[6],
-
-                    status:
-                        d[5],
-
-                    colaboradores: [],
-
-                    visualizacoes: 0,
-
-                    dataCriacao:
-                        new Date().toISOString()
-
-                })
-            );
-
-        saveProjects(
+        return {
+            users: [school],
             projects
-        );
+        };
+    }
 
-        localStorage.setItem(
-            K.seed,
-            'true'
-        );
+    function seed() {
+
+        let users = getUsers();
+        let projects = getProjects();
+
+        const initialized = localStorage.getItem(K.seed);
+
+        if (
+            !initialized &&
+            users.length === 0 &&
+            projects.length === 0
+        ) {
+
+            const initialData = createInitialData();
+
+            users = initialData.users;
+            projects = initialData.projects;
+        }
+
+        synchronizeRelations(users, projects);
+
+        saveUsers(users);
+        saveProjects(projects);
+
+        localStorage.setItem(K.seed, 'true');
+        localStorage.setItem(K.schema, '2');
     }
 
     return {
-
         XP,
+        XP_ACTIONS,
         id,
-
         getUsers,
         saveUsers,
-
         getProjects,
         saveProjects,
-
         getLoggedUser,
         setLoggedUser,
-
         logout,
-
         updateUser,
         updateProject,
-
+        sendProjectMessage,
+        removeProject,
         history,
         addXP,
-
+        addXp,
+        registerActivity,
         calculateLevel,
         levelInfo,
-
+        levelRoadmap,
         badgesFor,
         checkAchievements,
-
+        checkBadges,
+        normalizeUser,
+        normalizeProject,
         seed
-
     };
 
 })();

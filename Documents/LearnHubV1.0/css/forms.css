@@ -1,186 +1,132 @@
 .form-page {
-
+    width: min(100%, 1180px);
+    min-height: calc(100vh - 82px);
     display: grid;
-
-    place-items: center;
-
-    min-height:
-        calc(100vh - 100px);
-
-    padding: 35px 14px;
+    place-items: start center;
+    margin-inline: auto;
+    padding: clamp(32px, 5vw, 70px) 24px 72px;
 }
-
 
 .form-card {
-
-    width:
-        min(470px, 100%);
-
-    padding: 34px;
+    width: min(560px, 100%);
+    padding: clamp(26px, 4vw, 42px);
 }
-
 
 .form-card h1 {
-
-    margin:
-        14px 0 6px;
+    margin: 16px 0 8px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
 }
 
+.form-card > p { margin-top: 0; }
 
 .form-card label {
-
     display: grid;
-
-    gap: 7px;
-
-    margin: 16px 0;
-
-    font-weight: 650;
+    gap: 8px;
+    margin: 18px 0;
+    color: var(--text-primary);
+    font-weight: 680;
 }
-
 
 .form-card input,
 .form-card textarea,
 .form-card select {
-
     width: 100%;
-
-    color: #fff;
-
-    background:
-        #0f0e16;
-
-    border:
-        1px solid
-        var(--border-color);
-
-    border-radius: 10px;
-
-    padding: 12px;
-
+    min-height: 48px;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 14px;
     outline: 0;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
-
-.form-card input:focus,
-.form-card textarea:focus,
-.form-card select:focus {
-
-    border-color:
-        var(--secondary-purple);
+.form-card textarea { min-height: 126px; resize: vertical; line-height: 1.5; }
+.form-card input::placeholder, .form-card textarea::placeholder { color: color-mix(in srgb, var(--text-secondary) 72%, transparent); }
+.form-card input:hover, .form-card textarea:hover, .form-card select:hover { border-color: var(--border-strong); }
+.form-card input:focus, .form-card textarea:focus, .form-card select:focus {
+    border-color: var(--secondary-purple);
+    box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
+.form-card > button { width: 100%; margin-top: 10px; }
+.small { font-size: .9rem; }
+.link { color: var(--secondary-purple); font-weight: 700; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, .35fr); gap: 14px; }
+.two label { margin-block: 0 18px; }
 
-.form-card button {
-
-    width: 100%;
-
-    margin-top: 8px;
-}
-
-
-.small {
-
-    font-size: .88rem;
-}
-
-
-.link {
-
-    color:
-        var(--secondary-purple);
-
-    font-weight: bold;
-}
-
-
-.two {
-
+#projectForm {
+    width: min(980px, 100%);
     display: grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+        "badge badge"
+        "heading heading"
+        "lead lead"
+        "project-title project-title"
+        "description objective"
+        "category status"
+        "resources resources"
+        "image image"
+        "actions actions";
+    column-gap: 22px;
+    row-gap: 2px;
 }
 
+#projectForm > .badge { grid-area: badge; }
+#projectForm > h1 { grid-area: heading; }
+#projectForm > .form-lead { grid-area: lead; }
+#projectForm > label:nth-of-type(1) { grid-area: project-title; }
+#projectForm > label:nth-of-type(2) { grid-area: description; }
+#projectForm > label:nth-of-type(3) { grid-area: objective; }
+#projectForm > label:nth-of-type(4) { grid-area: category; }
+#projectForm > label:nth-of-type(5) { grid-area: resources; }
+#projectForm > label:nth-of-type(6) { grid-area: image; }
+#projectForm > label:nth-of-type(7) { grid-area: status; }
+#projectForm > .form-actions { grid-area: actions; }
+#projectForm > h1 { margin-bottom: 0; }
+#projectForm > label { align-content: start; }
+#projectForm > label:nth-of-type(2) textarea,
+#projectForm > label:nth-of-type(3) textarea { min-height: 150px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 14px; }
+.form-actions .btn { min-width: 150px; }
 
-.choice {
-
-    text-align: center;
-
-    padding: 70px 0;
-}
-
-
+.choice { text-align: center; padding: clamp(42px, 8vw, 92px) 0; }
+.choice > h1 { margin: 16px auto 10px; font-size: clamp(2.2rem, 5vw, 4rem); letter-spacing: -0.045em; }
+.choice > p { max-width: 650px; margin-inline: auto; }
 .choice-grid {
-
     display: grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap: 36px;
-
-    margin-top: 70px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    max-width: 960px;
+    margin: clamp(34px, 6vw, 64px) auto 0;
 }
+.choice-card { display: flex; flex-direction: column; align-items: center; padding: clamp(32px, 5vw, 54px) 34px; }
+.choice-icon { font-size: 3rem; }
+.choice-card h2 { margin-bottom: 8px; font-size: 1.65rem; }
+.choice-card p { flex: 1; max-width: 36ch; color: var(--text-secondary); }
+.choice-card .btn { margin-top: 18px; }
 
-
-.choice-card {
-
-    padding:
-        55px 35px;
-}
-
-
-.choice-icon {
-
-    font-size: 3rem;
-}
-
-
-.choice-card h2 {
-
-    font-size: 1.8rem;
-}
-
-
-.choice-card p {
-
-    color:
-        var(--text-secondary);
-
-    min-height: 50px;
-}
-
-
-.choice-card .btn {
-
-    margin-top: 20px;
-}
-
-
-@media (max-width: 650px) {
-
-    .choice {
-
-        padding: 35px 0;
+@media (max-width: 700px) {
+    .form-page { padding-inline: 14px; padding-top: 28px; }
+    .form-card { border-radius: 18px; }
+    #projectForm {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "badge" "heading" "lead" "project-title" "description"
+            "objective" "category" "resources" "image" "status" "actions";
     }
+    #projectForm > * { grid-column: 1 !important; }
+    .choice-grid { grid-template-columns: 1fr; }
+    .choice-card { padding: 32px 22px; }
+}
 
-
-    .choice-grid {
-
-        grid-template-columns:
-            1fr;
-
-        margin-top: 35px;
-    }
-
-
-    .choice-card {
-
-        padding:
-            35px 22px;
-    }
-
+@media (max-width: 480px) {
+    .form-card { padding: 24px 18px; }
+    .two { grid-template-columns: 1fr; gap: 0; }
+    .form-card label { margin-block: 14px; }
+    .form-actions { flex-direction: column-reverse; }
+    .form-actions .btn { width: 100%; }
 }

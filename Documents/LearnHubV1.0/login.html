@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Entrar | LearnHub</title>
+
+    <script src="js/theme.js"></script>
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/forms.css">
@@ -12,11 +14,23 @@
 
 <body>
 
-    <header class="container nav">
+    <header class="container nav public-nav">
 
         <a class="brand" href="index.html">
             LearnHub
         </a>
+
+        <div class="nav-actions">
+            <button
+                class="theme-toggle"
+                type="button"
+                data-theme-toggle
+            ></button>
+
+            <a class="btn btn-compact" href="index.html">
+                Início
+            </a>
+        </div>
 
     </header>
 
@@ -53,7 +67,7 @@
             <a
                 class="muted small"
                 href="#"
-                onclick="toast('Nesta versão, entre com suas credenciais cadastradas.')"
+                onclick="toast('A recuperação de senha será integrada em uma versão futura.'); return false;"
             >
                 Esqueceu sua senha?
             </a>

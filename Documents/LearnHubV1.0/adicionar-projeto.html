@@ -1,11 +1,13 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
     <title>Novo projeto | LearnHub</title>
+
+    <script src="js/theme.js"></script>
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/forms.css">
@@ -30,10 +32,16 @@
                 Adicionar projeto
             </h1>
 
+            <p class="form-lead muted">
+                Apresente a iniciativa com clareza para encontrar os apoiadores certos.
+            </p>
+
             <label>
                 Título
                 <input
                     name="titulo"
+                    maxlength="80"
+                    placeholder="Ex.: Biblioteca comunitária"
                     required
                 >
             </label>
@@ -42,6 +50,8 @@
                 Descrição
                 <textarea
                     name="descricao"
+                    maxlength="600"
+                    placeholder="Conte o contexto do projeto e quem será beneficiado"
                     required
                 ></textarea>
             </label>
@@ -50,6 +60,8 @@
                 Objetivo
                 <textarea
                     name="objetivo"
+                    maxlength="400"
+                    placeholder="Qual resultado a escola quer alcançar?"
                     required
                 ></textarea>
             </label>
@@ -91,6 +103,8 @@
                 Recursos necessários
                 <input
                     name="recursos"
+                    maxlength="300"
+                    placeholder="Ex.: livros, estantes e apoio de voluntários"
                     required
                 >
             </label>
@@ -124,9 +138,15 @@
 
             </label>
 
-            <button class="btn btn-primary">
-                Publicar projeto
-            </button>
+            <div class="form-actions">
+                <a class="btn" id="cancelProject" href="hub.html">
+                    Cancelar
+                </a>
+
+                <button class="btn btn-primary" id="submitProject" type="submit">
+                    Publicar projeto
+                </button>
+            </div>
 
         </form>
 

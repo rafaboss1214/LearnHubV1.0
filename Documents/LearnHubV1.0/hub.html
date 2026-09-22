@@ -1,11 +1,13 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
     <title>Projetos | LearnHub</title>
+
+    <script src="js/theme.js"></script>
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/hub.css">
@@ -30,7 +32,7 @@
                 </h1>
 
                 <p class="muted">
-                    Veja projetos que estão transformando a educação.
+                    Acompanhe seu impacto, descubra iniciativas e fortaleça conexões.
                 </p>
 
             </div>
@@ -42,12 +44,58 @@
 
         </section>
 
+        <section
+            class="hub-stats"
+            id="hubStats"
+            aria-label="Visão geral da comunidade"
+        ></section>
+
+        <section
+            class="hub-highlights"
+            id="hubHighlights"
+        ></section>
+
+        <div class="discovery-heading">
+            <div>
+                <span class="section-kicker">Descubra e participe</span>
+                <h2>Projetos da comunidade</h2>
+                <p class="muted" id="resultsSummary"></p>
+            </div>
+
+            <a class="text-action" href="progressao.html">
+                Ver minha jornada →
+            </a>
+        </div>
+
         <section class="controls panel">
 
-            <input
-                id="search"
-                placeholder="Busque por projeto, escola ou categoria"
-            >
+            <label class="search-field">
+                <span class="sr-only">Buscar projetos</span>
+                <input
+                    id="search"
+                    type="search"
+                    placeholder="Busque por projeto, escola ou categoria"
+                >
+            </label>
+
+            <div class="control-selects">
+                <label>
+                    <span class="sr-only">Categoria</span>
+                    <select id="categoryFilter" aria-label="Filtrar por categoria">
+                        <option value="Todas">Todas as categorias</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span class="sr-only">Ordenação</span>
+                    <select id="sortProjects" aria-label="Ordenar projetos">
+                        <option value="recentes">Mais recentes</option>
+                        <option value="apoio">Mais apoiados</option>
+                        <option value="visualizacoes">Mais visualizados</option>
+                        <option value="titulo">Ordem alfabética</option>
+                    </select>
+                </label>
+            </div>
 
             <div
                 class="filters"
@@ -77,6 +125,13 @@
                     data-filter="Concluído"
                 >
                     Concluídos
+                </button>
+
+                <button
+                    data-filter="Meus"
+                    id="myProjectsFilter"
+                >
+                    Meus projetos
                 </button>
 
             </div>

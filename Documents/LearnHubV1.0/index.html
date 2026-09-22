@@ -1,9 +1,18 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>LearnHub</title>
+
+    <meta
+        name="description"
+        content="A LearnHub conecta escolas públicas, comunidade e parceiros para apoiar projetos educacionais."
+    >
+
+    <title>LearnHub | Educação feita em comunidade</title>
+
+    <script src="js/theme.js"></script>
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/landing.css">
@@ -11,108 +20,366 @@
 
 <body>
 
-    <header class="container nav">
+    <header class="landing-header">
 
-        <a class="brand" href="index.html">
-            LearnHub
-        </a>
+        <nav
+            class="container nav"
+            aria-label="Navegação principal"
+        >
+            <a class="brand" href="#inicio">
+                LearnHub
+            </a>
 
-        <nav class="nav-links">
-            <a class="active" href="#inicio">Início</a>
-            <a href="#projeto">Projeto</a>
-            <a href="#impacto">Impacto</a>
-            <a href="#suporte">Suporte</a>
+            <div class="nav-links landing-nav-links">
+                <a class="active" href="#inicio">
+                    Início
+                </a>
+
+                <a href="#projetos">
+                    Projetos
+                </a>
+
+                <a href="#sobre">
+                    Sobre Nós
+                </a>
+            </div>
+
+            <div class="nav-actions landing-nav-actions">
+                <button
+                    class="theme-toggle"
+                    type="button"
+                    data-theme-toggle
+                ></button>
+
+                <a class="btn btn-compact" href="login.html">
+                    Entrar
+                </a>
+
+                <a class="btn btn-primary" href="cadastro.html">
+                    Cadastre-se
+                </a>
+            </div>
         </nav>
-
-        <a class="btn btn-primary" href="cadastro.html">
-            Entrar
-        </a>
 
     </header>
 
-    <main id="inicio" class="hero container">
+    <main>
 
-        <section>
+        <section id="inicio" class="hero container">
 
-            <span class="badge">
-                Conectando escolas e comunidades
-            </span>
+            <div class="hero-content">
+                <span class="badge">
+                    Educação feita em comunidade
+                </span>
 
-            <h1>
-                Transformando a educação através da colaboração
-            </h1>
+                <h1>
+                    Transformando projetos escolares em realidade.
+                </h1>
 
-            <p>
-                A LearnHub conecta escolas às suas comunidades,
-                permitindo apoio em projetos escolares através
-                de doações e colaboração social.
-            </p>
+                <p>
+                    A LearnHub conecta escolas, comunidade e parceiros
+                    para dar visibilidade e apoio a projetos educacionais.
+                </p>
 
-            <div class="hero-actions">
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="hub.html">
+                        Explorar projetos
+                    </a>
 
-                <a class="btn" href="#projeto">
-                    Conhecer Projeto
+                    <a class="btn btn-ghost" href="#sobre">
+                        Conheça a LearnHub
+                    </a>
+                </div>
+
+                <p class="hero-note">
+                    Colabore com materiais, serviços, conhecimento,
+                    voluntariado, divulgação ou novas parcerias.
+                </p>
+            </div>
+
+            <aside class="hero-card panel" aria-label="Impacto da LearnHub">
+                <div class="hero-card-header">
+                    <span class="eyebrow">Uma ponte para colaborar</span>
+                    <span class="impact-mark" aria-hidden="true">↗</span>
+                </div>
+
+                <h2>Apoio que vai além de doações.</h2>
+
+                <div class="hero-impact-list">
+                    <div>
+                        <span aria-hidden="true">01</span>
+                        <p>Escolas compartilham projetos e necessidades reais.</p>
+                    </div>
+
+                    <div>
+                        <span aria-hidden="true">02</span>
+                        <p>A comunidade encontra formas possíveis de ajudar.</p>
+                    </div>
+
+                    <div>
+                        <span aria-hidden="true">03</span>
+                        <p>O progresso fica visível para todos os envolvidos.</p>
+                    </div>
+                </div>
+            </aside>
+
+        </section>
+
+        <section id="projetos" class="landing-section container">
+
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">Projetos em destaque</span>
+                    <h2>Ideias que já estão mobilizando comunidades</h2>
+                </div>
+
+                <a class="text-link" href="hub.html">
+                    Ver todos os projetos →
                 </a>
+            </div>
 
-                <a class="btn" href="#impacto">
-                    Ver Impacto
-                </a>
+            <div
+                id="featuredProjects"
+                class="featured-grid"
+                aria-live="polite"
+            ></div>
 
-                <a class="btn btn-ghost" href="cadastro.html">
-                    Junte-se a nós
-                </a>
+        </section>
 
+        <section id="como-funciona" class="landing-section surface-section">
+
+            <div class="container">
+                <div class="section-heading compact-heading">
+                    <div>
+                        <span class="eyebrow">Como funciona</span>
+                        <h2>Colaboração simples e transparente</h2>
+                    </div>
+                </div>
+
+                <div class="steps-grid">
+                    <article class="step-card">
+                        <span>1</span>
+                        <h3>A escola publica</h3>
+                        <p>
+                            Apresenta o projeto, o objetivo e as formas
+                            de apoio de que precisa.
+                        </p>
+                    </article>
+
+                    <article class="step-card">
+                        <span>2</span>
+                        <h3>A comunidade descobre</h3>
+                        <p>
+                            Pessoas e organizações encontram iniciativas
+                            alinhadas ao que podem oferecer.
+                        </p>
+                    </article>
+
+                    <article class="step-card">
+                        <span>3</span>
+                        <h3>A colaboração acontece</h3>
+                        <p>
+                            Interessados participam, comentam e acompanham
+                            o desenvolvimento do projeto.
+                        </p>
+                    </article>
+                </div>
             </div>
 
         </section>
 
-        <aside class="hero-card panel">
+        <section id="sobre" class="landing-section container about-section">
 
-            <b>
-                Projeto LearnHub
-            </b>
+            <div class="about-intro">
+                <span class="eyebrow">Sobre Nós</span>
 
-            <p>
-                Uma plataforma moderna criada para fortalecer
-                a educação e aproximar escolas de suas comunidades.
-            </p>
+                <h2>Aproximamos quem precisa de apoio de quem deseja ajudar.</h2>
 
-        </aside>
+                <p>
+                    A LearnHub nasceu para aproximar escolas públicas de
+                    suas comunidades, ampliar a visibilidade de iniciativas
+                    educacionais e estimular uma cultura de colaboração
+                    entre escolas, pessoas e organizações.
+                </p>
+            </div>
+
+            <div class="about-grid">
+                <article>
+                    <span aria-hidden="true">◌</span>
+                    <h3>Quem somos</h3>
+                    <p>
+                        Uma plataforma de conexão para projetos escolares
+                        e colaboração comunitária.
+                    </p>
+                </article>
+
+                <article>
+                    <span aria-hidden="true">◇</span>
+                    <h3>Nossa missão</h3>
+                    <p>
+                        Facilitar a divulgação de necessidades e transformar
+                        boas ideias em ações possíveis.
+                    </p>
+                </article>
+
+                <article>
+                    <span aria-hidden="true">◎</span>
+                    <h3>Nossa visão</h3>
+                    <p>
+                        Escolas públicas mais conectadas, visíveis e apoiadas
+                        pelas comunidades ao seu redor.
+                    </p>
+                </article>
+
+                <article>
+                    <span aria-hidden="true">↗</span>
+                    <h3>Nosso impacto</h3>
+                    <p>
+                        Mais participação, novas parcerias e melhores condições
+                        para projetos educacionais.
+                    </p>
+                </article>
+            </div>
+
+        </section>
+
+        <section class="landing-section container benefits-section">
+
+            <div class="section-heading compact-heading">
+                <div>
+                    <span class="eyebrow">Muitas formas de contribuir</span>
+                    <h2>Cada pessoa pode apoiar do seu jeito</h2>
+                </div>
+            </div>
+
+            <div class="benefit-list" aria-label="Formas de colaboração">
+                <span>Materiais</span>
+                <span>Equipamentos</span>
+                <span>Serviços</span>
+                <span>Conhecimento técnico</span>
+                <span>Voluntariado</span>
+                <span>Divulgação</span>
+                <span>Parcerias</span>
+            </div>
+
+        </section>
+
+        <section class="landing-section surface-section testimonials-section">
+
+            <div class="container">
+                <div class="section-heading compact-heading">
+                    <div>
+                        <span class="eyebrow">Experiências</span>
+                        <h2>O que educadores dizem sobre a proposta</h2>
+                    </div>
+                </div>
+
+                <!--
+                    Depoimentos fictícios de protótipo.
+                    Substituir por avaliações reais em uma futura integração.
+                -->
+                <div class="testimonials-grid">
+                    <article class="testimonial-card panel">
+                        <div class="stars" aria-label="5 de 5 estrelas">
+                            ★★★★★
+                        </div>
+
+                        <blockquote>
+                            “A LearnHub nos ajudou a divulgar um projeto que
+                            antes ficava restrito à comunidade interna da escola.”
+                        </blockquote>
+
+                        <footer>
+                            <span class="testimonial-avatar" aria-hidden="true">AM</span>
+                            <div>
+                                <strong>Ana Martins</strong>
+                                <small>Diretora · Escola Municipal Exemplo</small>
+                            </div>
+                        </footer>
+                    </article>
+
+                    <article class="testimonial-card panel">
+                        <div class="stars" aria-label="5 de 5 estrelas">
+                            ★★★★★
+                        </div>
+
+                        <blockquote>
+                            “A plataforma tornou mais simples apresentar nossas
+                            necessidades e mostrar o andamento dos projetos.”
+                        </blockquote>
+
+                        <footer>
+                            <span class="testimonial-avatar" aria-hidden="true">CM</span>
+                            <div>
+                                <strong>Carlos Mendes</strong>
+                                <small>Diretor · Escola Estadual Exemplo</small>
+                            </div>
+                        </footer>
+                    </article>
+
+                    <article class="testimonial-card panel">
+                        <div class="stars" aria-label="5 de 5 estrelas">
+                            ★★★★★
+                        </div>
+
+                        <blockquote>
+                            “A participação da comunidade aumentou quando os
+                            projetos passaram a ter mais visibilidade.”
+                        </blockquote>
+
+                        <footer>
+                            <span class="testimonial-avatar" aria-hidden="true">FL</span>
+                            <div>
+                                <strong>Fernanda Lima</strong>
+                                <small>Diretora · Escola Pública Exemplo</small>
+                            </div>
+                        </footer>
+                    </article>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="final-cta container">
+            <div>
+                <span class="eyebrow">Faça parte dessa rede</span>
+                <h2>Uma boa ideia pode começar com uma nova conexão.</h2>
+            </div>
+
+            <a class="btn btn-primary" href="hub.html">
+                Explorar projetos
+            </a>
+        </section>
 
     </main>
 
-    <section id="projeto" class="landing-section container">
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <a class="brand" href="#inicio">LearnHub</a>
+                <p>
+                    Conectando escolas, comunidade e parceiros
+                    pela educação pública.
+                </p>
+            </div>
 
-        <h2>
-            Projetos que aproximam pessoas
-        </h2>
+            <nav aria-label="Navegação do rodapé">
+                <a href="#inicio">Início</a>
+                <a href="#projetos">Projetos</a>
+                <a href="#sobre">Sobre Nós</a>
+                <a href="login.html">Entrar</a>
+            </nav>
 
-        <p>
-            Escolas publicam necessidades reais.
-            A comunidade encontra maneiras de fazer parte
-            da transformação.
-        </p>
-
-    </section>
-
-    <section id="impacto" class="landing-section container">
-
-        <h2>
-            Impacto que se multiplica
-        </h2>
-
-        <p>
-            Cada apoio pode criar novas experiências de aprendizagem
-            para uma comunidade inteira.
-        </p>
-
-    </section>
-
-    <footer id="suporte" class="container muted">
-
-        LearnHub · Educação feita em comunidade
-
+            <p class="footer-copy">
+                © 2026 LearnHub · Projeto acadêmico
+            </p>
+        </div>
     </footer>
 
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/home.js"></script>
+
 </body>
+
 </html>

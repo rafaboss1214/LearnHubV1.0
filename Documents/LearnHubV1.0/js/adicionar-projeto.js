@@ -1,140 +1,121 @@
-let schoolUser =
-    verificarLogin();
+let schoolUser = verificarLogin();
 
 if (schoolUser) {
-
-    if (
-        schoolUser.tipo !== 'escola'
-    ) {
-
-        toast(
-            'Apenas escolas podem criar projetos.',
-            true
-        );
-
-        setTimeout(
-            () =>
-                location.href =
-                    'hub.html',
-            700
-        );
-
+    if (schoolUser.tipo !== 'escola' && !isAdmin(schoolUser)) {
+        toast('Apenas escolas podem gerenciar projetos.', true);
+        setTimeout(() => location.href = 'hub.html', 700);
     } else {
-
         renderNav();
 
-        document
-            .getElementById(
-                'projectForm'
-            )
-            .addEventListener(
-                'submit',
-                e => {
+        const form = document.getElementById('projectForm');
+        const editId = new URLSearchParams(location.search).get('edit');
+        const originalProject = editId
+            ? LearnHubStore.getProjects().find(project => project.id === editId)
+            : null;
 
-                    e.preventDefault();
+        if (editId && (!originalProject || !canManageProject(schoolUser, originalProject))) {
+            toast('Você não tem permissão para editar este projeto.', true);
+            setTimeout(() => location.href = 'hub.html', 850);
+        } else {
+            if (originalProject) {
+                prepareEditMode(originalProject);
+            }
 
-                    let d =
-                        Object.fromEntries(
-                            new FormData(e.target)
-                        );
+            form.addEventListener('submit', saveProject);
+        }
 
-                    let p = {
+        function prepareEditMode(project) {
+            document.title = `Editar ${project.titulo} | LearnHub`;
+            form.querySelector('.badge').textContent = 'Gestão do projeto';
+            form.querySelector('h1').textContent = 'Editar projeto';
+            form.querySelector('.form-lead').textContent =
+                'Mantenha as informações atualizadas para que os apoiadores entendam o momento atual da iniciativa.';
+            document.getElementById('submitProject').textContent = 'Salvar alterações';
+            document.getElementById('cancelProject').href =
+                `projeto.html?id=${encodeURIComponent(project.id)}`;
 
-                        id:
-                            LearnHubStore.id(
-                                'project'
-                            ),
+            form.elements.titulo.value = project.titulo;
+            form.elements.descricao.value = project.descricao;
+            form.elements.objetivo.value = project.objetivo;
+            form.elements.categoria.value = project.categoria;
+            form.elements.recursos.value = project.recursos;
+            form.elements.imagem.value = project.imagem || '';
+            form.elements.status.value = project.status;
+        }
 
-                        titulo:
-                            d.titulo.trim(),
+        function saveProject(event) {
+            event.preventDefault();
 
-                        escolaId:
-                            schoolUser.id,
+            const submitButton = document.getElementById('submitProject');
+            submitButton.disabled = true;
 
-                        escolaNome:
-                            schoolUser.nomeEscola ||
-                            schoolUser.nome,
+            const data = Object.fromEntries(new FormData(form));
+            const wasCompleted = originalProject?.status === 'Concluído';
+            const nowCompleted = data.status === 'Concluído';
+            const timestamp = new Date().toISOString();
+            const project = LearnHubStore.normalizeProject({
+                ...(originalProject || {}),
+                id: originalProject?.id || LearnHubStore.id('project'),
+                titulo: data.titulo.trim(),
+                escolaId: originalProject?.escolaId || schoolUser.id,
+                escolaNome: originalProject?.escolaNome || schoolUser.nomeEscola || schoolUser.nome,
+                descricao: data.descricao.trim(),
+                objetivo: data.objetivo.trim(),
+                categoria: data.categoria,
+                recursos: data.recursos.trim(),
+                imagem: data.imagem.trim() || '✨',
+                status: data.status,
+                colaboradores: originalProject?.colaboradores || [],
+                visualizacoes: originalProject?.visualizacoes || 0,
+                mensagens: originalProject?.mensagens || [],
+                comentarios: originalProject?.comentarios || [],
+                dataCriacao: originalProject?.dataCriacao || timestamp,
+                dataAtualizacao: timestamp
+            });
 
-                        descricao:
-                            d.descricao.trim(),
+            schoolUser.projetos = [...new Set([...(schoolUser.projetos || []), project.id])];
 
-                        objetivo:
-                            d.objetivo.trim(),
+            if (nowCompleted) {
+                schoolUser.projetosConcluidos = [
+                    ...new Set([...(schoolUser.projetosConcluidos || []), project.id])
+                ];
+            } else {
+                schoolUser.projetosConcluidos = (schoolUser.projetosConcluidos || [])
+                    .filter(id => id !== project.id);
+            }
 
-                        categoria:
-                            d.categoria,
+            if (!originalProject) {
+                LearnHubStore.addXP(
+                    schoolUser,
+                    LearnHubStore.XP.PUBLICAR,
+                    `Você publicou o projeto ${project.titulo}.`
+                );
+            } else {
+                LearnHubStore.history(
+                    schoolUser,
+                    `Você atualizou o projeto ${project.titulo}.`
+                );
+            }
 
-                        recursos:
-                            d.recursos.trim(),
+            if (nowCompleted && !wasCompleted && !project.conclusaoRecompensada) {
+                LearnHubStore.addXP(
+                    schoolUser,
+                    LearnHubStore.XP.CONCLUIR_PROJETO,
+                    `Você concluiu o projeto ${project.titulo}.`
+                );
+                project.conclusaoRecompensada = true;
+            }
 
-                        imagem:
-                            d.imagem.trim() ||
-                            '✨',
+            const achievements = LearnHubStore.checkAchievements(schoolUser);
+            LearnHubStore.updateProject(project);
+            schoolUser = LearnHubStore.updateUser(schoolUser);
 
-                        status:
-                            d.status,
+            showAchievements(achievements);
+            toast(originalProject ? 'Projeto atualizado com sucesso!' : 'Projeto publicado com sucesso!');
 
-                        colaboradores: [],
-
-                        visualizacoes: 0,
-
-                        dataCriacao:
-                            new Date()
-                                .toISOString()
-
-                    };
-
-                    schoolUser.projetos.push(
-                        p.id
-                    );
-
-                    if (
-                        p.status ===
-                        'Concluído'
-                    ) {
-
-                        schoolUser
-                            .projetosConcluidos
-                            .push(
-                                p.id
-                            );
-                    }
-
-                    LearnHubStore.addXP(
-                        schoolUser,
-                        LearnHubStore.XP.PUBLICAR,
-                        `Você publicou o projeto ${p.titulo}.`
-                    );
-
-                    let items =
-                        LearnHubStore
-                            .checkAchievements(
-                                schoolUser
-                            );
-
-                    LearnHubStore
-                        .updateProject(p);
-
-                    LearnHubStore
-                        .updateUser(
-                            schoolUser
-                        );
-
-                    showAchievements(
-                        items
-                    );
-
-                    toast(
-                        'Projeto publicado com sucesso!'
-                    );
-
-                    setTimeout(
-                        () =>
-                            location.href =
-                                'hub.html',
-                        850
-                    );
-                }
-            );
+            setTimeout(() => {
+                location.href = `projeto.html?id=${encodeURIComponent(project.id)}`;
+            }, 700);
+        }
     }
 }
