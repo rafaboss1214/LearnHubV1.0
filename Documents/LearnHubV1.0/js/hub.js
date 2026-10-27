@@ -61,8 +61,8 @@ if (hubUser) {
         const stats = [
             ['Projetos ativos', active, 'iniciativas em movimento', '↗'],
             [isSchool ? 'Projetos da escola' : 'Projetos apoiados', related.length, isSchool ? 'publicados por você' : 'que contam com você', isSchool ? '🏫' : '🤝'],
-            ['Rede de apoio', supporters.size, 'pessoas conectadas', '◎'],
-            ['Impactos concluídos', completed, 'projetos realizados', '✓']
+            [isSchool?'Solicitações recebidas':'Solicitações enviadas',isSchool?(hubUser.participation?.received||0):(hubUser.participation?.sent||0),'aguardam análise ou já receberam uma decisão','◎'],
+            ['Colaborações concluídas',hubUser.participation?.completed||0,'entregas confirmadas pela escola','✓']
         ];
 
         document.getElementById('hubStats').innerHTML = stats.map(stat => `
@@ -228,7 +228,8 @@ if (hubUser) {
                     <p>${escapeHtml(project.descricao)}</p>
                     <div class="project-meta">
                         <span>🤝 ${project.colaboradores.length}</span>
-                        <span>👁 ${project.visualizacoes}</span>
+                        <span title="Solicitações recebidas">Solicitações: ${project.solicitacoesRecebidas||0}</span>
+                        <span title="Colaborações concluídas">Concluídas: ${project.colaboracoesConcluidas||0}</span>
                         <span>${escapeHtml(formatDate(project.dataAtualizacao))}</span>
                     </div>
                     <div class="card-actions">

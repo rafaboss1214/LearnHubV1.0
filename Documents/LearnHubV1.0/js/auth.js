@@ -9,7 +9,7 @@ function verificarLogin() {
         return null;
     }
 
-    const unlocked = LearnHubStore.checkAchievements(user);
+    const unlocked = [];
 
     if (unlocked.length) {
         LearnHubStore.updateUser(user);
@@ -48,7 +48,12 @@ function fazerLogin(email, senha) {
     return user;
 }
 
-function fazerLogout() {
+async function fazerLogout() {
+
+    if (window.LearnHubAPI) {
+        try { await LearnHubAPI('/logout', 'POST', {}); }
+        catch (error) { toast(error.message, true); return; }
+    }
 
     LearnHubStore.logout();
 
@@ -110,6 +115,8 @@ function isSafeImageSource(value) {
     if (!source) {
         return false;
     }
+
+    if (/^\/api\/avatars\/[a-zA-Z0-9-]+(?:\?v=[a-zA-Z0-9-]+)?$/.test(source)) return true;
 
     return /^(https?:\/\/|data:image\/|\.\.\/|\.\/|assets\/|images\/)/i
         .test(source);
@@ -207,6 +214,7 @@ function renderNav(active = '') {
     const firstName = escapeHtml(
         user.nome.split(' ')[0]
     );
+    document.body.classList.add('app-shell');
 
     document
         .querySelectorAll('[data-nav]')
@@ -218,18 +226,15 @@ function renderNav(active = '') {
                         class="nav container"
                         aria-label="Navegação principal"
                     >
-                        <a class="brand" href="index.html">
+                        <a class="brand" href="hub.html">
                             LearnHub
                         </a>
 
-                        <div class="nav-links">
-                            <a
-                                class="${active === 'home' ? 'active' : ''}"
-                                href="index.html"
-                            >
-                                Início
-                            </a>
-
+                        <div class="nav-links" id="appMenu">
+                            <span class="sidebar-heading">SEU ESPAÇO</span>
+                            <a href="historico.html" class="${active==='historico'?'active':''}">Colaborações</a>
+                            ${user.tipo==='admin'?'<a href="administracao.html">Verificar escolas</a>':''}
+                            <a href="chat.html" class="${active === 'chat' ? 'active' : ''}">Mensagens</a>
                             <a
                                 class="${active === 'hub' ? 'active' : ''}"
                                 href="hub.html"
@@ -289,6 +294,7 @@ function renderNav(active = '') {
                                 type="button"
                                 aria-label="Abrir menu"
                                 aria-expanded="false"
+                                aria-controls="appMenu"
                             >
                                 <span aria-hidden="true">☰</span>
                             </button>
@@ -310,13 +316,40 @@ function renderNav(active = '') {
             return;
         }
 
-        toggle.addEventListener('click', () => {
-            const isOpen = links.classList.toggle('open');
+        const desktop = matchMedia('(min-width: 1101px)');
+        let collapsed = localStorage.getItem('learnhub-sidebar-collapsed') === 'true';
+        const setOpen = isOpen => {
+            links.classList.toggle('open', isOpen);
+            if (desktop.matches) {
+                collapsed = !isOpen;
+                localStorage.setItem('learnhub-sidebar-collapsed', String(collapsed));
+                document.documentElement.classList.toggle('sidebar-hidden', collapsed);
+            }
+            document.body.classList.toggle('sidebar-collapsed', desktop.matches && !isOpen);
             toggle.setAttribute('aria-expanded', String(isOpen));
             toggle.setAttribute('aria-label', isOpen ? 'Fechar menu' : 'Abrir menu');
             toggle.querySelector('span').textContent = isOpen ? '×' : '☰';
+        };
+        setOpen(desktop.matches && !collapsed);
+        desktop.addEventListener('change', () => setOpen(desktop.matches && !collapsed));
+        links.querySelector('.active')?.setAttribute('aria-current', 'page');
+        toggle.addEventListener('click', () => setOpen(!links.classList.contains('open')));
+        header.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && links.classList.contains('open')) {
+                setOpen(false);
+                toggle.focus();
+            }
+        });
+        document.addEventListener('click', event => {
+            if (!desktop.matches && !event.composedPath().includes(header)) setOpen(false);
         });
     });
+    if (!document.querySelector('.site-footer')) {
+        const footer = document.createElement('footer');
+        footer.className = 'site-footer app-footer';
+        footer.innerHTML = `<div class="container"><div><a class="brand" href="hub.html">LearnHub</a><p>Conectando pessoas e projetos pela educação.</p></div><nav aria-label="Navegação do rodapé"><a href="hub.html">Projetos</a><a href="chat.html">Mensagens</a><a href="progressao.html">Progressão</a></nav><small>© 2026 LearnHub · Projeto acadêmico</small></div>`;
+        document.body.append(footer);
+    }
 }
 
 function showAchievements(items) {

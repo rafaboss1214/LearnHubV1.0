@@ -31,7 +31,17 @@
 .modal-overlay .form-card h2 { margin-top: 0; }
 .modal-overlay .form-card label { display: grid; gap: 7px; margin: 15px 0; font-weight: 650; }
 .modal-overlay .form-card input, .modal-overlay .form-card textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 11px; outline: 0; background: var(--bg-input); color: var(--text-primary); }
-.modal-overlay .form-card textarea { min-height: 100px; resize: vertical; }
+.modal-overlay .form-card textarea { min-height: 100px; resize: none; }
+.profile-location-fields { display:grid; grid-template-columns:minmax(0,1fr) 90px; gap:14px; }
+.modal-overlay .form-card label small { color:var(--text-secondary); font-size:.75rem; font-weight:400; }
+#profileError { color:var(--danger,#ff8686); }
+.profile-photo-editor { display:flex; align-items:center; gap:18px; padding:16px; border:1px solid var(--border-color); border-radius:16px; background:var(--bg-input); }
+.profile-photo-editor>div:last-child { min-width:0; flex:1; }
+.profile-photo-editor .avatar { width:76px; height:76px; min-width:76px; }
+.profile-photo-editor small { display:block; color:var(--text-secondary); font-size:.72rem; }
+.profile-photo-editor #removePhoto { margin-top:10px; padding:6px 10px; font-size:.75rem; }
+.profile-photo-editor input[type=file] { font-size:.75rem; padding:8px; }
+@media(max-width:480px) { .profile-photo-editor { flex-direction:column; align-items:stretch; } }
 .modal-overlay .form-card input:focus, .modal-overlay .form-card textarea:focus { border-color: var(--secondary-purple); box-shadow: 0 0 0 4px var(--focus-ring); }
 
 @media (max-width: 800px) {

@@ -6,6 +6,8 @@
     margin-inline: auto;
     padding: clamp(32px, 5vw, 70px) 24px 72px;
 }
+.register-form fieldset { border:1px solid var(--border-color); border-radius:12px; padding:16px; min-width:0; margin-block:16px; }
+.register-form fieldset legend { padding:0 8px; color:var(--text-secondary); font-size:.85rem; }
 
 .form-card {
     width: min(560px, 100%);
@@ -105,6 +107,9 @@
 }
 .choice-card { display: flex; flex-direction: column; align-items: center; padding: clamp(32px, 5vw, 54px) 34px; }
 .choice-icon { font-size: 3rem; }
+#projectImagePreview { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; margin-block: 12px; }
+#projectImagePreview[hidden] { display: none; }
+#projectImageFile { max-width: 100%; }
 .choice-card h2 { margin-bottom: 8px; font-size: 1.65rem; }
 .choice-card p { flex: 1; max-width: 36ch; color: var(--text-secondary); }
 .choice-card .btn { margin-top: 18px; }

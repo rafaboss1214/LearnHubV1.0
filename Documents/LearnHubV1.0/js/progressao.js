@@ -14,7 +14,12 @@ if (progressUser) {
         ? projects.filter(project => project.escolaId === progressUser.id)
         : projects.filter(project => (progressUser.projetosColaborados || []).includes(project.id));
 
-    const stats = isSchool
+    const stats = window.LearnHubOnline ? [
+        [isSchool?'Recebidas':'Enviadas',isSchool?progressUser.participation.received:progressUser.participation.sent,'solicitações, sem pontos por envio'],
+        ['Aceitas',progressUser.participation.accepted,'colaborações com chat liberado'],
+        ['Concluídas',progressUser.participation.completed,'entregas confirmadas pela escola'],
+        ['Emblemas',unlockedCount,'conquistas por participação confirmada']
+    ] : isSchool
         ? [
             ['Projetos', userProjects.length, 'iniciativas publicadas'],
             ['Em andamento', userProjects.filter(project => project.status === 'Em andamento').length, 'projetos mobilizando pessoas'],
@@ -36,7 +41,9 @@ if (progressUser) {
         .reduce((total, item) => total + (Number(item.xp) || 0), 0);
     const weeklyGoal = 50;
     const weeklyPercent = Math.min(100, weeklyXP / weeklyGoal * 100);
-    const xpGuide = isSchool
+    const xpGuide = window.LearnHubOnline
+        ? [['🤝','Concluir uma colaboração',20,'Para o colaborador, após confirmação da escola. Uma vez por solicitação realizada.'],['📨','Enviar uma solicitação',0,'Enviar, visualizar e conversar não concedem pontos.']]
+        : isSchool
         ? [
             ['📣', 'Publicar um projeto', LearnHubStore.XP.PUBLICAR, 'Dê visibilidade a uma necessidade real.'],
             ['✨', 'Criar sua conta', LearnHubStore.XP.CONTA, 'O primeiro passo da jornada já conta.'],
@@ -226,6 +233,16 @@ if (progressUser) {
     `;
 
     function getNextMission() {
+        if(window.LearnHubOnline) {
+            const pending=userProjects.find(project=>project.status!=='Concluído' && !(progressUser.projetosConcluidos || []).includes(project.id));
+            return {
+                title:isSchool?'Acompanhe as propostas recebidas':pending?'Leve sua colaboração até a entrega':'Encontre uma iniciativa para apoiar',
+                description:isSchool?'Confirme as entregas realizadas para reconhecer o impacto dos apoiadores.':'Combine a ajuda pelo chat. Após a entrega, a escola confirma sua colaboração e os pontos ficam registrados.',
+                action:pending?'Ver propostas':'Explorar projetos',
+                href:pending?`projeto.html?id=${encodeURIComponent(pending.id)}#propostas`:'hub.html',
+                reward:isSchool?'20 XP para o colaborador':'+20 XP por colaboração confirmada'
+            };
+        }
         if (isSchool) {
             if (!userProjects.length) {
                 return {

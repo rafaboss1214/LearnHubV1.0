@@ -2,6 +2,7 @@ const featuredContainer = document.getElementById('featuredProjects');
 const homeUser = obterUsuarioLogado();
 
 if (homeUser) {
+    location.replace('hub.html');
     const publicHeader = document.querySelector('.landing-header');
 
     if (publicHeader) {
@@ -16,6 +17,10 @@ if (homeUser) {
             link.textContent = 'Minha conta';
         });
 }
+
+window.addEventListener('pageshow', () => {
+    if (obterUsuarioLogado()) location.replace('hub.html');
+});
 
 if (featuredContainer) {
 

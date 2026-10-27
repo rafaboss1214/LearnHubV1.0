@@ -8,6 +8,32 @@ if (schoolUser) {
         renderNav();
 
         const form = document.getElementById('projectForm');
+        const imageFile = document.getElementById('projectImageFile');
+        const preview = document.getElementById('projectImagePreview');
+        let imageChanged = false, previewUrl;
+        // Local previews can also attach images; the server remains the shared storage mode.
+        imageFile.disabled = false;
+        function updatePreview(source) {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = source instanceof File ? URL.createObjectURL(source) : null;
+            const url = previewUrl || (isSafeImageSource(source) ? source : '');
+            preview.hidden = !url;
+            if (url) preview.src = url; else preview.removeAttribute('src');
+        }
+        imageFile.addEventListener('change', () => {
+            const file = imageFile.files[0];
+            if (!file) return;
+            if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>3*1024*1024) {
+                imageFile.value=''; toast('Escolha JPG, PNG ou WebP de até 3 MB.',true); return;
+            }
+            imageChanged=true; updatePreview(file);
+        });
+        form.elements.imagem.addEventListener('input', () => {
+            imageChanged=true; imageFile.value=''; updatePreview(form.elements.imagem.value);
+        });
+        document.getElementById('removeProjectImage').addEventListener('click', () => {
+            imageChanged=true; imageFile.value=''; form.elements.imagem.value=''; updatePreview('');
+        });
         const editId = new URLSearchParams(location.search).get('edit');
         const originalProject = editId
             ? LearnHubStore.getProjects().find(project => project.id === editId)
@@ -39,17 +65,42 @@ if (schoolUser) {
             form.elements.objetivo.value = project.objetivo;
             form.elements.categoria.value = project.categoria;
             form.elements.recursos.value = project.recursos;
-            form.elements.imagem.value = project.imagem || '';
+            form.elements.imagem.value = project.imagem?.startsWith('data:') ? '' : project.imagem || '';
+            updatePreview(project.banner || project.imagem);
             form.elements.status.value = project.status;
         }
 
-        function saveProject(event) {
+        async function saveProject(event) {
             event.preventDefault();
 
             const submitButton = document.getElementById('submitProject');
             submitButton.disabled = true;
 
             const data = Object.fromEntries(new FormData(form));
+            const file = imageFile.files[0];
+            if (file) {
+                try {
+                    data.imageData = await new Promise((resolve,reject) => {
+                        const reader=new FileReader();
+                        reader.onload=()=>resolve(reader.result.split(',')[1]);
+                        reader.onerror=()=>reject(new Error('Não foi possível ler a imagem.'));
+                        reader.readAsDataURL(file);
+                    });
+                    data.imagem = `data:${file.type};base64,${data.imageData}`;
+                } catch (error) { toast(error.message,true); submitButton.disabled=false; return; }
+            } else if (!imageChanged && originalProject) {
+                data.imagem = originalProject.imagem || '';
+            }
+            if (window.LearnHubAPI) {
+                try {
+                    data.keepImage = !imageChanged;
+                    // Send the bytes only once, within the API's upload size limit.
+                    if (file || data.keepImage) data.imagem = '';
+                    const saved = await LearnHubAPI('/projects', 'POST', {...data, id:originalProject?.id});
+                    location.href = `projeto.html?id=${encodeURIComponent(saved.id)}`;
+                } catch (error) { toast(error.message, true); submitButton.disabled=false; }
+                return;
+            }
             const wasCompleted = originalProject?.status === 'Concluído';
             const nowCompleted = data.status === 'Concluído';
             const timestamp = new Date().toISOString();
@@ -64,6 +115,7 @@ if (schoolUser) {
                 categoria: data.categoria,
                 recursos: data.recursos.trim(),
                 imagem: data.imagem.trim() || '✨',
+                banner: imageChanged ? '' : originalProject?.banner || '',
                 status: data.status,
                 colaboradores: originalProject?.colaboradores || [],
                 visualizacoes: originalProject?.visualizacoes || 0,
@@ -107,7 +159,12 @@ if (schoolUser) {
             }
 
             const achievements = LearnHubStore.checkAchievements(schoolUser);
-            LearnHubStore.updateProject(project);
+            try { LearnHubStore.updateProject(project); }
+            catch {
+                toast('Não há espaço no navegador para salvar esta imagem. Use uma imagem menor ou abra http://localhost:3000 para salvar no banco.',true);
+                submitButton.disabled=false;
+                return;
+            }
             schoolUser = LearnHubStore.updateUser(schoolUser);
 
             showAchievements(achievements);

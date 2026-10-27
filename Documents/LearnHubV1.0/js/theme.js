@@ -1,5 +1,19 @@
 (function () {
 
+    // Reserve the authenticated layout before the first paint, not after page scripts run.
+    const page = location.pathname.split('/').pop();
+    // Keep file-mode navigation in one top-level document (one browser zoom context).
+    if (location.protocol === 'file:' && window.top === window.self) {
+        location.replace('local.html#' + encodeURIComponent(page + location.search + location.hash));
+        return;
+    }
+    if (['hub.html','progressao.html','perfil.html','chat.html','projeto.html','adicionar-projeto.html','historico.html','certificado.html','administracao.html'].includes(page)) {
+        document.documentElement.classList.add('app-layout');
+        try {
+            document.documentElement.classList.toggle('sidebar-hidden', localStorage.getItem('learnhub-sidebar-collapsed') === 'true');
+        } catch { /* Use the default expanded layout if storage is unavailable. */ }
+    }
+
     const STORAGE_KEY = 'theme';
 
     function getSavedTheme() {
@@ -68,6 +82,7 @@
     }
 
     function bindThemeButtons() {
+        document.querySelectorAll('.brand').forEach(brand=>{brand.innerHTML='<span class="brand-learn">Learn</span><span class="brand-hub">Hub</span>';brand.setAttribute('aria-label','LearnHub');});
 
         document
             .querySelectorAll('[data-theme-toggle]')

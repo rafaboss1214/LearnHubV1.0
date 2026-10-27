@@ -2,7 +2,7 @@ document
     .querySelector('.register-form')
     .addEventListener(
         'submit',
-        e => {
+        async e => {
 
             e.preventDefault();
 
@@ -14,11 +14,11 @@ document
                 );
 
             if (
-                d.senha.length < 6
+                d.senha.length < 10
             ) {
 
                 return toast(
-                    'A senha deve ter pelo menos 6 caracteres.',
+                    'A senha deve ter pelo menos 10 caracteres.',
                     true
                 );
             }
@@ -32,6 +32,17 @@ document
                     'As senhas não coincidem.',
                     true
                 );
+            }
+
+            if (window.LearnHubAPI) {
+                const button = f.querySelector('button');
+                button.disabled = true;
+                try {
+                    const result=await LearnHubAPI('/register', 'POST', {...d, tipo:f.dataset.type});
+                    f.innerHTML='<h1>Cadastro recebido</h1><p id="registrationMessage" role="status"></p><a class="btn" href="conta.html#action=resend">Reenviar confirmação</a><a class="btn btn-primary" href="login.html">Ir ao login</a>';
+                    document.getElementById('registrationMessage').textContent=result.message;
+                } catch (error) { toast(error.message, true); button.disabled = false; }
+                return;
             }
 
             let users =
@@ -96,6 +107,9 @@ document
 
             };
 
+            u.communityType=escola?null:d.communityType;
+            u.institutionStatus=escola?'nao_verificada':null;
+            u.enderecoPrivado=Object.fromEntries(['cep','rua','bairro','cidade','estado','numero','complemento'].map(k=>[k,d[k]||'']));
             if (escola) {
 
                 Object.assign(
@@ -106,7 +120,7 @@ document
                             u.nome,
 
                         endereco:
-                            d.endereco
+                            (d.rua || '')
                                 .trim(),
 
                         cidade:

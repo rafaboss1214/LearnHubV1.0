@@ -110,7 +110,12 @@
             </label>
 
             <label>
-                Imagem/banner (emoji ou URL opcional)
+                Capa e banner do projeto
+                <input id="projectImageFile" type="file" accept="image/jpeg,image/png,image/webp">
+                <small>JPG, PNG ou WebP · até 3 MB. A mesma imagem será usada na capa e no banner. Prefira uma foto horizontal.</small>
+                <img id="projectImagePreview" alt="Prévia da capa do projeto" hidden>
+                <button class="btn" id="removeProjectImage" type="button">Remover imagem</button>
+                <span>Ou use um emoji ou endereço de imagem</span>
                 <input
                     name="imagem"
                     placeholder="Ex.: 🌱"

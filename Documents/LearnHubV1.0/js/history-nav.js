@@ -1,0 +1,1 @@
+if(verificarLogin())renderNav('historico');

@@ -771,6 +771,10 @@ const LearnHubStore = (() => {
     }
 
     function badgesFor(user) {
+        if(typeof window!=='undefined' && window.LearnHubOnline){
+            const completed=Number(user.participation?.completed)||0;
+            return [{id:'colaboracao-confirmada',icon:'🤝',nome:'Participação confirmada',descricao:'Uma colaboração concluída e confirmada pela escola.',meta:1},{id:'impacto-continuo',icon:'🏅',nome:'Impacto contínuo',descricao:'Cinco colaborações concluídas e confirmadas.',meta:5}].map(b=>({...b,progresso:Math.min(completed,b.meta),desbloqueado:completed>=b.meta}));
+        }
 
         const unlockedIds = new Set(
             (user.emblemas || []).map(badge => badge.id)
@@ -786,7 +790,7 @@ const LearnHubStore = (() => {
                 definition.meta,
                 Math.max(0, definition.progress(user))
             ),
-            desbloqueado: unlockedIds.has(definition.id)
+            desbloqueado: unlockedIds.has(definition.id) || (typeof window!=='undefined' && window.LearnHubOnline && definition.progress(user)>=definition.meta)
         }));
     }
 
@@ -992,6 +996,18 @@ const LearnHubStore = (() => {
     }
 
     function seed() {
+
+        if (typeof window !== 'undefined' && window.LearnHubOnline) {
+            const online = window.LearnHubOnline;
+            const people = online.users.map(normalizeUser);
+            const shared = online.projects.map(normalizeProject);
+            synchronizeRelations(people, shared);
+            saveUsers(people);
+            saveProjects(shared);
+            if (online.user) setLoggedUser(online.user.id);
+            else logout();
+            return;
+        }
 
         let users = getUsers();
         let projects = getProjects();
