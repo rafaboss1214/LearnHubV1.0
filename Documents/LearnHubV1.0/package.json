@@ -1,1 +1,19 @@
-{"private":true,"scripts":{"start":"node server.js","seed:demo":"node scripts/seed-demo.js","test":"node tests/storage.test.js && node --test tests/chat.test.js tests/migration.test.js tests/deployment.test.js","admin:grant":"node scripts/set-admin.js","backup":"node scripts/backup.js","check:production":"node scripts/check-production.js"},"engines":{"node":">=22.13"},"dependencies":{"nodemailer":"^10.2.1","pdfkit":"^0.20.2","sharp":"^0.35.5"}}
+{
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "seed:demo": "node scripts/seed-demo.js",
+    "test": "node tests/storage.test.js && node --test tests/chat.test.js tests/categories.test.js tests/migration.test.js tests/deployment.test.js",
+    "admin:grant": "node scripts/set-admin.js",
+    "backup": "node scripts/backup.js",
+    "check:production": "node scripts/check-production.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "nodemailer": "^10.2.1",
+    "pdfkit": "^0.20.2",
+    "sharp": "^0.35.5"
+  }
+}

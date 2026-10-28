@@ -60,7 +60,7 @@ if (projectUser) {
 
                     <div class="info-grid">
                         <div class="info"><small>Objetivo</small>${escapeHtml(project.objetivo)}</div>
-                        <div class="info"><small>Recursos necessários</small>${escapeHtml(project.recursos)}</div>
+                        <div class="info"><small>Categorias de apoio</small>${SupportCategories.forProject(project).map(escapeHtml).join(" · ")}</div><div class="info"><small>Recursos necessários</small>${escapeHtml(project.recursos)}</div>
                         <div class="info"><small>Solicitações recebidas</small>${project.solicitacoesRecebidas||0}</div>
                         <div class="info"><small>Colaborações aceitas</small>${project.colaboracoesAceitas||0}</div>
                         <div class="info"><small>Colaborações concluídas</small>${project.colaboracoesConcluidas||0}</div>

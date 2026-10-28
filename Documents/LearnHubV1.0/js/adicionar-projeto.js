@@ -38,6 +38,8 @@ if (schoolUser) {
         const originalProject = editId
             ? LearnHubStore.getProjects().find(project => project.id === editId)
             : null;
+        const chosen=originalProject ? SupportCategories.forProject(originalProject) : [];
+        document.getElementById('supportCategoryOptions').innerHTML=SupportCategories.labels.map(label=>`<label><input type="checkbox" name="supportCategories" value="${label}" ${chosen.includes(label)?'checked':''}><span>${label}</span></label>`).join('');
 
         if (editId && (!originalProject || !canManageProject(schoolUser, originalProject))) {
             toast('Você não tem permissão para editar este projeto.', true);
@@ -77,6 +79,9 @@ if (schoolUser) {
             submitButton.disabled = true;
 
             const data = Object.fromEntries(new FormData(form));
+            try { data.supportCategories=SupportCategories.validate(new FormData(form).getAll('supportCategories')); }
+            catch(error) { document.getElementById('supportCategoryError').textContent=error.message; document.querySelector('[name=supportCategories]').focus(); submitButton.disabled=false; return; }
+            document.getElementById('supportCategoryError').textContent='';
             const file = imageFile.files[0];
             if (file) {
                 try {
@@ -113,6 +118,7 @@ if (schoolUser) {
                 descricao: data.descricao.trim(),
                 objetivo: data.objetivo.trim(),
                 categoria: data.categoria,
+                supportCategories: data.supportCategories,
                 recursos: data.recursos.trim(),
                 imagem: data.imagem.trim() || '✨',
                 banner: imageChanged ? '' : originalProject?.banner || '',

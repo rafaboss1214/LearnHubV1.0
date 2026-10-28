@@ -143,6 +143,9 @@ function createApp(dataDir = dataDirectory(), options = {}) {
             const old=projects().find(p=>p.id===body.id);
             if (old && old.escolaId!==me.id) fail(403,'Este projeto pertence a outra escola.');
             const p={...(old || {}),id:old?.id || crypto.randomUUID(),escolaId:me.id,escolaNome:me.nome, colaboradores:old?.colaboradores || [],dataCriacao:old?.dataCriacao || new Date().toISOString(),dataAtualizacao:new Date().toISOString()};
+            const categories=require('./js/support-categories');
+            try { p.supportCategories=Object.hasOwn(body,'supportCategories') ? categories.validate(body.supportCategories) : categories.forProject(old); }
+            catch(error) { fail(400,error.message); }
             for (const field of ['titulo','descricao','objetivo','categoria','recursos','imagem','status']) p[field]=String(body[field] || '').slice(0,5000);
             if (!p.titulo.trim() || !['Planejamento','Em andamento','Concluído'].includes(p.status)) fail(400,'Título e status válidos são obrigatórios.');
             if (Object.hasOwn(body,'imageData')) {

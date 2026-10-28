@@ -39,7 +39,7 @@ document
                 button.disabled = true;
                 try {
                     const result=await LearnHubAPI('/register', 'POST', {...d, tipo:f.dataset.type});
-                    f.innerHTML='<h1>Cadastro recebido</h1><p id="registrationMessage" role="status"></p><a class="btn" href="conta.html#action=resend">Reenviar confirmação</a><a class="btn btn-primary" href="login.html">Ir ao login</a>';
+                    f.innerHTML='<h1>Conta criada</h1><p id="registrationMessage" role="status"></p><a class="btn btn-primary" href="login.html">Entrar na minha conta</a>';
                     document.getElementById('registrationMessage').textContent=result.message;
                 } catch (error) { toast(error.message, true); button.disabled = false; }
                 return;

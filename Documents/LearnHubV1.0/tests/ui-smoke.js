@@ -14,17 +14,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  try{
   const setup=await browser.newContext({baseURL:base});
   for(const [nome,tipo]of [['Escola de teste','escola'],['Colaborador de teste','colaborador']]){
-   const email=tipo+'@qa.local';await setup.request.post('/api/register',{data:{nome,tipo,email,senha:'test-password',communityType:'responsavel',institutionEvidence:'Instituição fictícia exclusiva para teste automatizado'}});
-   const link=mails.at(-1).text.match(/https?:\/\/\S+/)[0];const token=new URLSearchParams(new URL(link).hash.slice(1)).get('token');await setup.request.post('/api/auth/verify',{data:{token}});
+   const email=tipo+'@qa.local';const registered=await setup.request.post('/api/register',{data:{nome,tipo,email,senha:'test-password',communityType:'responsavel'}});assert.equal(registered.status(),201);
   }
-  const db=new DatabaseSync(path.join(dir,'learnhub.sqlite'));const row=db.prepare("SELECT * FROM users WHERE email='escola@qa.local'").get();const school=JSON.parse(row.data);school.institutionStatus='aprovada';db.prepare('UPDATE users SET data=? WHERE id=?').run(JSON.stringify(school),school.id);db.close();
+  assert.equal(mails.length,0);
   const schoolContext=await browser.newContext({baseURL:base,viewport:{width:1440,height:900}}),supportContext=await browser.newContext({baseURL:base,viewport:{width:1440,height:900}});
   const schoolPage=await schoolContext.newPage(),personPage=await supportContext.newPage();
   for(const [page,email]of [[schoolPage,'escola@qa.local'],[personPage,'colaborador@qa.local']]){
    page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/login.html');await page.locator('[name=email]').fill(email);await page.locator('[name=senha]').fill('test-password');await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.waitForURL('**/hub.html');
   }
   const p=await(await schoolContext.request.post('/api/projects',{data:{titulo:'Biblioteca da comunidade',descricao:'Projeto fictício para teste visual.',objetivo:'Ampliar o acervo escolar.',recursos:'Livros',categoria:'Leitura',status:'Planejamento'}})).json();
-  await personPage.goto(base+'/projeto.html?id='+p.id);await personPage.locator('[name=description]').fill('Organização e entrega de livros para a biblioteca comunitária.');await personPage.getByRole('button',{name:'Enviar solicitação',exact:true}).click();await personPage.locator('#requests').getByText('Pendente',{exact:true}).waitFor();
+  await personPage.goto(base+'/projeto.html?id='+p.id);await personPage.locator('[name=kind]').selectOption('Recursos materiais');await personPage.locator('[name=description]').fill('Organização e entrega de livros para a biblioteca comunitária.');await personPage.getByRole('button',{name:'Enviar solicitação',exact:true}).click();await personPage.locator('#requests').getByText('Pendente',{exact:true}).waitFor();
   await schoolPage.goto(base+'/historico.html');await schoolPage.getByRole('button',{name:'Aceitar',exact:true}).click();await schoolPage.getByRole('button',{name:'Confirmar realização'}).waitFor();
   await personPage.goto(base+'/historico.html');await personPage.getByRole('link',{name:'Chat privado'}).click();await personPage.getByRole('textbox',{name:'Sua mensagem'}).fill('Olá, podemos combinar a entrega?');await personPage.getByRole('button',{name:'Enviar mensagem'}).click();await personPage.getByText('Olá, podemos combinar a entrega?',{exact:true}).last().waitFor();
   await schoolPage.getByRole('button',{name:'Confirmar realização'}).click();await schoolPage.getByRole('button',{name:'Confirmar realização',exact:true}).last().click();await schoolPage.getByRole('button',{name:'Emitir certificado'}).click();await schoolPage.getByRole('link',{name:'Ver certificado'}).click();await schoolPage.getByRole('link',{name:'Baixar PDF'}).waitFor();
@@ -45,8 +44,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   }
   // CEP service failure/not-found responses keep manual fields editable.
   await personPage.goto(base+'/cadastro-colaborador.html');
+  await personPage.route('https://viacep.com.br/**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({logradouro:'Praça da Sé',bairro:'Sé',localidade:'São Paulo',uf:'SP'})}));
+  await personPage.locator('[name=numero]').fill('123');await personPage.locator('[name=complemento]').fill('Sala 2');
+  await personPage.locator('[name=cep]').fill('01001-000');
+  await personPage.waitForFunction(()=>document.querySelector('[name=rua]').value==='Praça da Sé');
+  for(const [name,value]of Object.entries({bairro:'Sé',cidade:'São Paulo',estado:'SP',numero:'123',complemento:'Sala 2'}))assert.equal(await personPage.locator(`[name=${name}]`).inputValue(),value);
+  await personPage.unroute('https://viacep.com.br/**');
   await personPage.route('https://viacep.com.br/**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({erro:true})}));
-  await personPage.locator('[name=cep]').fill('01001000');await personPage.getByRole('button',{name:'Consultar CEP'}).click();await personPage.getByText('CEP não encontrado. Confira ou preencha o endereço manualmente.').waitFor();
+  await personPage.locator('[name=cep]').fill('99999999');await personPage.getByText('CEP não encontrado. Confira ou preencha o endereço manualmente.').waitFor();
   await personPage.unroute('https://viacep.com.br/**');await personPage.route('https://viacep.com.br/**',route=>route.abort());await personPage.getByRole('button',{name:'Consultar CEP'}).click();await personPage.getByText('Consulta indisponível. Você pode preencher todos os campos manualmente.').waitFor();await personPage.locator('[name=rua]').fill('Rua preenchida manualmente');
   await personPage.goto(base+'/historico.html');await personPage.screenshot({path:path.join(out,'history-mobile.png'),fullPage:true});
   assert.deepEqual(errors,[]);console.log('Browser QA passed: login, request, acceptance, chat, completion, PDF and six responsive pages. Artifacts: '+out);

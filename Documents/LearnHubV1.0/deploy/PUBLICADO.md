@@ -1,5 +1,15 @@
 # Ambiente de testes publicado — 27/10/2026
 
+## Atualização publicada em 28/10/2026
+
+Categorias de apoio publicadas e ativadas por reinício confirmado no painel: escolha no projeto, solicitação categorizada e caixa de mensagens por projeto/categoria, incluindo aceite e recusa. Seis testes de API/armazenamento passaram no Linux; testes visuais passaram localmente em desktop e celular. Após reiniciar, HTTPS retornou 200 para o site, o módulo de categorias e o HTML atualizado do chat; a API de conversas permanece 401 sem sessão. Backup do banco e do código anterior realizado antes do envio. Nenhum commit ou push nesta atualização.
+
+Login sem confirmação de e-mail; escolas publicam sem aprovação de administrador;
+consulta automática de CEP. A análise institucional permanece como selo opcional.
+Os registros existentes não são apagados nem marcados artificialmente como verificados.
+Aplicada na hospedagem com backup do banco e da versão anterior, testes isolados
+aprovados no Linux e reinício pelo painel. Consulta real de CEP conferida no site público.
+
 - URL: https://learnhub.alwaysdata.net/
 - Provedor/plano confirmado no painel: alwaysdata Free, €0, 1 GB de disco, 256 MB RAM.
 - Site Node.js: 1093077; versão principal 24.
@@ -19,7 +29,7 @@ e eventuais pedidos de confirmação diretamente no painel. Nenhuma proteção f
 
 O banco online começou vazio. Não foram enviados dados pessoais do banco local,
 contas fictícias nem senhas. Cadastros de localhost/localStorage não foram importados.
-O administrador inicial ainda precisa de uma conta real cadastrada e confirmada,
+O administrador inicial ainda precisa de uma conta real cadastrada,
 e de atribuição explícita pelo operador com `scripts/set-admin.js`.
 
 Atualize somente o código; não sobrescreva a pasta private. Execute comandos

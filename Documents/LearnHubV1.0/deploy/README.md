@@ -60,8 +60,8 @@ node --env-file=/home/SUA_CONTA/private/learnhub.env scripts/set-admin.js seu-em
 
 ## 3. E-mails reais
 
-É obrigatório configurar um SMTP com remetente autorizado para confirmar cadastro e
-recuperar senha. Use uma conta/provedor que autorize envio SMTP e confira sua quota gratuita.
+Configure um SMTP com remetente autorizado para recuperar senha.
+Cadastro e login não dependem de confirmação de e-mail. Use um provedor que autorize envio SMTP e confira sua quota gratuita.
 Preencha SMTP_HOST, SMTP_PORT, SMTP_SECURE e MAIL_FROM. Se o provedor exigir login,
 preencha SMTP_USER e SMTP_PASSWORD juntos.
 O alwaysdata documenta autorização de SMTP sem senha para serviços executados na própria
@@ -73,15 +73,15 @@ Não use a senha pessoal comum quando o provedor exigir senha de aplicativo ou c
 Porta 587: SMTP_SECURE=0 (STARTTLS); porta 465: SMTP_SECURE=1.
 APP_URL deve ser exatamente a origem HTTPS pública, sem caminho.
 O check:production verifica campos preenchidos; não testa autenticação SMTP nem entrega.
-Sem SMTP funcionando os usuários não poderão confirmar novos cadastros e entrar.
-Não há confirmação falsa nem desativação das proteções para colocar a demonstração no ar.
+Sem SMTP funcionando, apenas a recuperação por e-mail fica indisponível; cadastro e login funcionam.
+Não há confirmação falsa: os campos históricos de verificação são preservados, sem bloquear acesso.
 
 ## 4. Verificação após publicar
 
 - Abra o link público no celular usando outra rede e confira HTTPS.
-- Cadastre escola e colaborador com e-mails reais; confira confirmação e recuperação de senha.
-- Crie uma conta administrativa dedicada, confirme seu e-mail e execute set-admin no servidor.
-- Analise e aprove a escola na administração; publique um projeto com imagem.
+- Cadastre escola e colaborador; confira login imediato e recuperação de senha.
+- Se precisar de administração, crie uma conta dedicada e execute set-admin no servidor.
+- Publique um projeto com imagem como escola, sem aprovação administrativa.
 - Envie uma solicitação, aceite, troque mensagens, conclua e baixe o certificado.
 - Reinicie o site pelo painel e confirme que contas, imagem, histórico e mensagens continuam.
 - Teste com terceiro usuário: não deve acessar conversas/certificados alheios.
@@ -105,7 +105,7 @@ Pare o site remoto, guarde backup do banco remoto se já existir, e transfira o 
 como `learnhub.sqlite` para o DATA_DIR remoto. Só faça isso em diretório novo ou seguindo
 restauração controlada; não misture banco restaurado com arquivos WAL/SHM antigos.
 Não sobrescreva cadastros criados no ar. Dados de localStorage não são importados automaticamente.
-Contas antigas continuam sujeitas a confirmação real de e-mail e escolas à análise institucional.
+Contas antigas também entram sem confirmação. A análise institucional é um selo opcional, não uma permissão de publicação.
 
 O plano gratuito não elimina a necessidade de backup nem garante disponibilidade ilimitada.
 Antes de abrir inscrições reais, revise capacidade, monitoramento e práticas de privacidade.
